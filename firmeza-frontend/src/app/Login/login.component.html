@@ -1,0 +1,184 @@
+<style>
+  :host {
+    --bright-blue: oklch(51.01% 0.274 263.83);
+    --electric-violet: oklch(53.18% 0.28 296.97);
+    --french-violet: oklch(47.66% 0.246 305.88);
+    --gray-900: oklch(19.37% 0.006 300.98);
+    --gray-700: oklch(36.98% 0.014 302.71);
+    --gray-400: oklch(70.9% 0.015 304.04);
+    --gray-200: oklch(92% 0.01 300);
+
+    display: block;
+    height: 100dvh;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .login-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, var(--bright-blue) 0%, var(--electric-violet) 50%, var(--french-violet) 100%);
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+
+  .login-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  }
+
+  .login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .login-logo {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .login-header h1 {
+    font-size: 1.75rem;
+    color: var(--gray-900);
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+  }
+
+  .login-header p {
+    color: var(--gray-700);
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gray-900);
+  }
+
+  .form-group input {
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--bright-blue);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--bright-blue) 15%, transparent);
+  }
+
+  .form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--gray-700);
+    cursor: pointer;
+  }
+
+  .forgot-link {
+    color: var(--bright-blue);
+    text-decoration: none;
+  }
+
+  .forgot-link:hover {
+    text-decoration: underline;
+  }
+
+  .btn-login {
+    background: linear-gradient(90deg, var(--bright-blue), var(--electric-violet));
+    color: white;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .btn-login:hover {
+    opacity: 0.9;
+  }
+
+  .login-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--gray-700);
+  }
+
+  .login-footer a {
+    color: var(--bright-blue);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .login-footer a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">🔒</div>
+      <h1>Firmeza</h1>
+      <p>Inicia sesión en tu cuenta</p>
+    </div>
+
+    <form class="login-form">
+      <div class="form-group">
+        <label for="usuario">Usuario</label>
+        <input type="text" id="usuario" name="usuario" placeholder="Ingresa tu usuario" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" />
+      </div>
+
+      <div class="form-options">
+        <label class="remember-me">
+          <input type="checkbox" />
+          <span>Recordarme</span>
+        </label>
+        <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button type="submit" class="btn-login">Iniciar sesión</button>
+    </form>
+
+    <div class="login-footer">
+      <p>¿No tienes cuenta? <a href="#">Regístrate</a></p>
+    </div>
+  </div>
+</div>

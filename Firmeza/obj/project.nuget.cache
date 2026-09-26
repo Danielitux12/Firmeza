@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "dgSpecHash": "7X+oWrGMn7Q=",
+  "success": true,
+  "projectFilePath": "/home/cohorte5/danielillo/C#/FirmezaSolution/Firmeza/Firmeza.csproj",
+  "expectedPackageFiles": [
+    "/home/cohorte5/.nuget/packages/microsoft.entityframeworkcore/10.0.4/microsoft.entityframeworkcore.10.0.4.nupkg.sha512",
+    "/home/cohorte5/.nuget/packages/microsoft.entityframeworkcore.abstractions/10.0.4/microsoft.entityframeworkcore.abstractions.10.0.4.nupkg.sha512",
+    "/home/cohorte5/.nuget/packages/microsoft.entityframeworkcore.analyzers/10.0.4/microsoft.entityframeworkcore.analyzers.10.0.4.nupkg.sha512",
+    "/home/cohorte5/.nuget/packages/microsoft.entityframeworkcore.relational/10.0.4/microsoft.entityframeworkcore.relational.10.0.4.nupkg.sha512",
+    "/home/cohorte5/.nuget/packages/nettopologysuite/2.6.0/nettopologysuite.2.6.0.nupkg.sha512",
+    "/home/cohorte5/.nuget/packages/nettopologysuite.io.postgis/2.1.0/nettopologysuite.io.postgis.2.1.0.nupkg.sha512",
+    "/home/cohorte5/.nuget/packages/npgsql/10.0.3/npgsql.10.0.3.nupkg.sha512",
+    "/home/cohorte5/.nuget/packages/npgsql.entityframeworkcore.postgresql/10.0.3/npgsql.entityframeworkcore.postgresql.10.0.3.nupkg.sha512",
+    "/home/cohorte5/.nuget/packages/npgsql.entityframeworkcore.postgresql.nettopologysuite/10.0.3/npgsql.entityframeworkcore.postgresql.nettopologysuite.10.0.3.nupkg.sha512",
+    "/home/cohorte5/.nuget/packages/npgsql.nettopologysuite/10.0.3/npgsql.nettopologysuite.10.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
