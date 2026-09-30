@@ -1,0 +1,16 @@
+**/.git
+**/.gitignore
+**/.idea
+**/.vscode
+**/.vs
+**/.angular
+**/node_modules
+**/bin
+**/obj
+**/dist
+**/wwwroot/dist
+**/*.user
+**/.env
+**/Dockerfile*
+**/docker-compose*
+**/npm-debug.log

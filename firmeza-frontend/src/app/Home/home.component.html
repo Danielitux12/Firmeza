@@ -1,194 +1,221 @@
 <style>
   :host {
-    --bright-blue: oklch(51.01% 0.274 263.83);
-    --electric-violet: oklch(53.18% 0.28 296.97);
-    --french-violet: oklch(47.66% 0.246 305.88);
-    --gray-900: oklch(19.37% 0.006 300.98);
-    --gray-700: oklch(36.98% 0.014 302.71);
-    --gray-400: oklch(70.9% 0.015 304.04);
-    --gray-200: oklch(92% 0.01 300);
+    --navy-900: #0f1f38;
+    --navy-800: #16294a;
+    --steel-600: #1f4e8c;
+    --steel-700: #193f72;
+    --ink: #1b2431;
+    --slate: #4a5568;
+    --rule: #d3d9e2;
+    --paper: #f5f6f8;
 
     display: block;
     min-height: 100dvh;
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
 
   .home-page {
     min-height: 100%;
-    background: #fafafa;
+    background: #fff;
   }
 
+  /* Barra de navegación */
   .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 2rem;
-    background: white;
-    border-bottom: 1px solid var(--gray-200);
+    padding: 1.1rem 2rem;
+    background: #fff;
+    border-bottom: 1px solid var(--rule);
   }
 
   .navbar .brand {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--gray-900);
-  }
-
-  .navbar .brand span {
-    background: linear-gradient(90deg, var(--bright-blue), var(--electric-violet));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--navy-900);
+    letter-spacing: 0.01em;
   }
 
   .btn-nav-login {
-    background: linear-gradient(90deg, var(--bright-blue), var(--electric-violet));
-    color: white;
-    border: none;
+    background: var(--navy-800);
+    color: #fff;
+    border: 1px solid var(--navy-800);
     padding: 0.55rem 1.25rem;
-    border-radius: 0.5rem;
+    border-radius: 0.25rem;
     font-size: 0.9rem;
     font-weight: 600;
-    cursor: pointer;
     text-decoration: none;
     display: inline-block;
+    transition: background-color 0.15s ease;
   }
 
   .btn-nav-login:hover {
-    opacity: 0.9;
+    background: var(--steel-700);
+    border-color: var(--steel-700);
   }
 
+  /* Portada */
   .hero {
-    text-align: center;
-    padding: 5rem 1.5rem 4rem;
-    max-width: 720px;
+    background: var(--navy-900);
+    border-bottom: 4px solid var(--steel-600);
+    padding: 5rem 2rem 4.5rem;
+  }
+
+  .hero-inner {
+    max-width: 960px;
     margin: 0 auto;
   }
 
   .hero h1 {
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
     font-size: 2.75rem;
-    color: var(--gray-900);
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.15;
+    color: #fff;
     margin: 0 0 1rem 0;
   }
 
-  .hero h1 span {
-    background: linear-gradient(90deg, var(--bright-blue), var(--electric-violet), var(--french-violet));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
   .hero p {
-    color: var(--gray-700);
+    max-width: 55ch;
+    color: #d5dceb;
     font-size: 1.1rem;
+    line-height: 1.6;
     margin: 0 0 2rem 0;
   }
 
   .hero-actions {
     display: flex;
-    justify-content: center;
-    gap: 1rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.8rem 1.6rem;
+    border-radius: 0.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   .btn-primary {
-    background: linear-gradient(90deg, var(--bright-blue), var(--electric-violet));
-    color: white;
-    border: none;
-    padding: 0.85rem 1.75rem;
-    border-radius: 0.6rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
+    background: #fff;
+    color: var(--navy-900);
+    border: 1px solid #fff;
+  }
+
+  .btn-primary:hover {
+    background: #e6ebf3;
+    border-color: #e6ebf3;
   }
 
   .btn-secondary {
-    background: white;
-    color: var(--gray-900);
-    border: 1px solid var(--gray-200);
-    padding: 0.85rem 1.75rem;
-    border-radius: 0.6rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
+    background: transparent;
+    color: #fff;
+    border: 1px solid #7f93b3;
   }
 
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #fff;
+  }
+
+  .btn-nav-login:focus-visible,
+  .btn-primary:focus-visible,
+  .btn-secondary:focus-visible {
+    outline: 3px solid rgba(127, 170, 230, 0.7);
+    outline-offset: 2px;
+  }
+
+  /* Características */
   .features {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    gap: 2.5rem;
     max-width: 960px;
     margin: 0 auto;
-    padding: 0 1.5rem 5rem;
+    padding: 4rem 2rem 5rem;
   }
 
   .feature-card {
-    background: white;
-    border: 1px solid var(--gray-200);
-    border-radius: 0.75rem;
-    padding: 1.75rem;
-  }
-
-  .feature-card .icon {
-    font-size: 1.75rem;
-    margin-bottom: 0.75rem;
+    border-top: 2px solid var(--steel-600);
+    padding-top: 1.25rem;
   }
 
   .feature-card h3 {
-    font-size: 1.05rem;
-    color: var(--gray-900);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--navy-900);
     margin: 0 0 0.5rem 0;
   }
 
   .feature-card p {
-    font-size: 0.9rem;
-    color: var(--gray-700);
+    font-size: 0.95rem;
+    color: var(--slate);
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.6;
   }
 
   @media screen and (max-width: 700px) {
-    .features {
-      grid-template-columns: 1fr;
+    .navbar {
+      padding: 1rem 1.25rem;
+    }
+
+    .hero {
+      padding: 3rem 1.25rem 3rem;
     }
 
     .hero h1 {
       font-size: 2rem;
+    }
+
+    .features {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      padding: 2.5rem 1.25rem 3rem;
     }
   }
 </style>
 
 <div class="home-page">
   <nav class="navbar">
-    <div class="brand"><span>Firmeza</span></div>
+    <div class="brand">Firmeza</div>
     <a href="/Login" class="btn-nav-login">Iniciar sesión</a>
   </nav>
 
   <section class="hero">
-    <h1>Bienvenido a <span>Firmeza</span></h1>
-    <p>{{ subtitle() }}</p>
-    <div class="hero-actions">
-      <a href="/Login" class="btn-primary">Comenzar</a>
-      <a href="#features" class="btn-secondary">Conocer más</a>
+    <div class="hero-inner">
+      <h1>Bienvenido a Firmeza</h1>
+      <p>{{ subtitle() }}</p>
+      <div class="hero-actions">
+        <a href="/Login" class="btn-primary">Comenzar</a>
+        <a href="#features" class="btn-secondary">Conocer más</a>
+      </div>
     </div>
   </section>
 
   <div class="features" id="features">
     <div class="feature-card">
-      <div class="icon">🔒</div>
       <h3>Seguridad</h3>
       <p>Protege tu información con los más altos estándares de seguridad.</p>
     </div>
     <div class="feature-card">
-      <div class="icon">⚡</div>
-      <h3>Rápido</h3>
+      <h3>Rendimiento</h3>
       <p>Rendimiento optimizado para que tu trabajo fluya sin interrupciones.</p>
     </div>
     <div class="feature-card">
-      <div class="icon">📊</div>
-      <h3>Confiable</h3>
+      <h3>Confiabilidad</h3>
       <p>Disponibilidad y estabilidad en las que puedes confiar todos los días.</p>
     </div>
   </div>

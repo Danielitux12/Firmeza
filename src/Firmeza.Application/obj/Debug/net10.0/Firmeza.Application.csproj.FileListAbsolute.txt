@@ -1,0 +1,16 @@
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/bin/Debug/net10.0/Firmeza.Application.deps.json
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/bin/Debug/net10.0/Firmeza.Application.dll
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/bin/Debug/net10.0/Firmeza.Application.pdb
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/bin/Debug/net10.0/Firmeza.Domain.dll
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/bin/Debug/net10.0/Firmeza.Domain.pdb
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/obj/Debug/net10.0/Firmeza.Application.csproj.AssemblyReference.cache
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/obj/Debug/net10.0/Firmeza.Application.GeneratedMSBuildEditorConfig.editorconfig
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/obj/Debug/net10.0/Firmeza.Application.AssemblyInfoInputs.cache
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/obj/Debug/net10.0/Firmeza.Application.AssemblyInfo.cs
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/obj/Debug/net10.0/Firmeza.Application.csproj.CoreCompileInputs.cache
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/obj/Debug/net10.0/Firmeza.Application.sourcelink.json
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/obj/Debug/net10.0/Firmeza..B328F532.Up2Date
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/obj/Debug/net10.0/Firmeza.Application.dll
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/obj/Debug/net10.0/refint/Firmeza.Application.dll
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/obj/Debug/net10.0/Firmeza.Application.pdb
+/home/cohorte5/danielillo/C#/FirmezaSolution/src/Firmeza.Application/obj/Debug/net10.0/ref/Firmeza.Application.dll
