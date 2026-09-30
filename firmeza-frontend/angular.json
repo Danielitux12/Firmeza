@@ -17,7 +17,7 @@
           "builder": "@angular/build:application",
           "options": {
             "outputPath": {
-              "base": "../src/Firmeza.Web/wwwroot/dist",
+              "base": "../Firmeza.Web/wwwroot/dist",
               "browser": ""
             },
             "browser": "src/main.ts",

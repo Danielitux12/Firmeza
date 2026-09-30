@@ -99,7 +99,8 @@ yarn-error.log*
 .angular/
 
 ## Salida del build de Angular dentro del backend
-src/Firmeza.Web/wwwroot/dist/
+Firmeza.Web/wwwroot/dist/
+Firmeza.Web/wwwroot/ng-dist/
 
 ## ---------- Docker ----------
 docker-compose.override.yml

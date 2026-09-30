@@ -1,96 +1,229 @@
 # Firmeza Solution
 
-Proyecto con arquitectura en capas siguiendo principios de Clean Architecture, compuesto por un backend ASP.NET Core y un frontend Angular.
+Project based on a layered architecture with a clear separation between business, application, infrastructure, and presentation.
 
-## Estructura del proyecto
+## Project structure
 
 ```text
 FirmezaSolution/
-├─ src/
-│  ├─ Firmeza.Domain              # Reglas del negocio y entidades
-│  ├─ Firmeza.Application         # Casos de uso y lógica de aplicación
-│  ├─ Firmeza.Infrastructure      # Acceso a datos, EF Core, repositorios
-│  └─ Firmeza.Web                 # ASP.NET Core MVC/Web API
-├─ firmeza-frontend/              # Frontend Angular
-├─ tests/                         # Pruebas del proyecto
-├─ FirmezaSolution.sln            # Solución principal
-├─ docker-compose.yml
-├─ Dockerfile
+├─ Firmeza.Domain/              # Domain logic and entities
+├─ Firmeza.Application/         # Use cases, services, and contracts
+├─ Firmeza.Infrastructure/      # EF Core, PostgreSQL, repositories
+├─ Firmeza.Web/                 # ASP.NET Core MVC/Web API
+├─ firmeza-frontend/            # Angular frontend
+├─ .env.example                 # Example environment variables
+├─ .env                         # Local environment variables (do not commit)
+├─ docker-compose.yml           # App and PostgreSQL orchestration
+├─ Dockerfile                   # Backend image
+├─ FirmezaSolution.sln          # Main solution
+├─ README.md                    # Project documentation
 ├─ .gitignore
-└─ README.md
+├─ .dockerignore
+├─ .idea/                       # Local IDE configuration
+└─ tests/                       # Test folder (if added later)
 ```
 
-## Capa Domain
+---
 
-La capa Domain contiene la lógica más importante del negocio:
+## Layered architecture
 
-- Entidades
-- Reglas de validación
-- Contratos de repositorios
-- Lógica central del sistema
+The solution is organized with the base structure requested by the team:
 
-No debe depender de bases de datos, APIs ni del frontend.
+- Domain: business entities and rules
+- Application: use cases and contracts
+- Infrastructure: data access and technical details
+- Web: controllers and HTTP exposure
 
-## Capa Application
+Dependency direction is as follows:
 
-La capa Application orquesta los casos de uso del sistema, por ejemplo:
+- Domain depends on no one
+- Application depends on Domain
+- Infrastructure depends on Application and Domain
+- Web depends on Application and infrastructure only through interfaces and configuration
 
-- registro de usuarios
-- autenticación
-- validación de reglas de negocio
-- transformación de datos
-
-## Capa Infrastructure
-
-La capa Infrastructure implementa detalles técnicos:
-
-- Entity Framework Core
-- PostgreSQL
-- repositorios concretos
-- servicios externos
-
-## Capa Web
-
-La capa Web es la capa de presentación y entrada al sistema:
-
-- Controladores MVC
-- Views
-- configuración de ASP.NET Core
-- enrutamiento de la aplicación
+This keeps the solution decoupled and easier to maintain, while still being a well-structured monolith.
 
 ---
 
-## Requisitos
+## 1. Firmeza.Domain
 
-Antes de iniciar el proyecto asegúrate de tener instalado:
+### Path
+`Firmeza.Domain`
+
+### Responsibility
+Contains the business entities, domain rules, and validations for the core business logic.
+
+### Includes
+- entities
+- business validations
+- state rules
+- core logic without depending on databases or APIs
+
+### Example
+- `Employee`
+- `Product`
+- validations such as `IsValid()`, `Activate()`, `Deactivate()`
+
+### Key rule
+It must not depend on:
+- ASP.NET Core
+- Entity Framework
+- Angular
+- PostgreSQL
+
+---
+
+## 2. Firmeza.Application
+
+### Path
+`Firmeza.Application`
+
+### Responsibility
+Coordinates the business use cases and defines the application logic.
+
+### Includes
+- services
+- repository interfaces
+- DTOs
+- use cases
+- application flow validation
+
+### Example
+- create employee
+- list products
+- validate data before persistence
+
+### Dependencies
+- depends on Domain
+- should not depend directly on the Web layer
+
+---
+
+## 3. Firmeza.Infrastructure
+
+### Path
+`Firmeza.Infrastructure`
+
+### Responsibility
+Implements technical details such as database access, persistence, configuration, and external services.
+
+### Includes
+- `AppDbContext`
+- entity configurations
+- concrete repositories
+- migrations
+- dependency injection
+
+### Example
+- save employees in PostgreSQL
+- implement repository interfaces
+- map entities to database tables
+
+### Dependencies
+- depends on Domain and Application
+
+---
+
+## 4. Firmeza.Web
+
+### Path
+`Firmeza.Web`
+
+### Responsibility
+This is the entry and presentation layer of the system. It exposes the application through HTTP endpoints and renders the MVC UI.
+
+### Includes
+- controllers
+- models
+- views
+- HTTP pipeline configuration
+- app startup
+
+### Example
+- `HomeController`
+- `LoginController`
+- REST or MVC endpoints for screens
+
+### Dependencies
+- depends on Application and configured infrastructure
+
+---
+
+## 5. Angular frontend
+
+### Path
+`firmeza-frontend/`
+
+### Responsibility
+This is the user presentation layer. It consumes the backend API and displays the information.
+
+### Includes
+- components
+- HTTP services
+- routes
+- styles
+- templates
+
+### Example
+- login
+- employee list
+- product management
+
+---
+
+## Environment variables
+
+The project uses environment variables for the PostgreSQL connection.
+
+### Example file
+`.env.example`
+
+```env
+ConnectionStrings__DefaultConnection=Host=localhost;Port=5432;Database=firmeza;Username=firmeza;Password=coder1234
+```
+
+### Real local file
+Create a `.env` file in the root with your real values.
+
+---
+
+## Requirements
+
+Before running the project, make sure you have installed:
 
 - .NET SDK 10
-- Node.js y npm
-- Angular CLI (si vas a levantar el frontend de forma independiente)
-- PostgreSQL (si vas a usar la infraestructura con base de datos real)
+- Node.js and npm
+- Angular CLI
+- PostgreSQL or Docker
 
 ---
 
-## Ejecutar el backend
+## Run the backend locally
 
-Desde la raíz del proyecto:
+From the project root:
 
 ```bash
 dotnet restore
-DOTNET_CLI_TELEMETRY_OPTOUT=1 dotnet run --project src/Firmeza.Web
+dotnet run --project Firmeza.Web
 ```
 
-La aplicación normalmente queda disponible en:
+The application is usually available at:
 
 ```text
-http://localhost:5287
+http://localhost:5290
+```
+
+If you need to force a specific port:
+
+```bash
+dotnet run --project Firmeza.Web --urls http://localhost:5290
 ```
 
 ---
 
-## Ejecutar el frontend Angular
+## Run the Angular frontend
 
-Desde la carpeta del frontend:
+From the project root:
 
 ```bash
 cd firmeza-frontend
@@ -98,16 +231,48 @@ npm install
 npm start
 ```
 
-O bien:
+Or directly:
 
 ```bash
 cd firmeza-frontend
 npx ng serve
 ```
 
+The frontend normally runs at:
+
+```text
+http://localhost:4200
+```
+
 ---
 
-## Compilar la solución completa
+## Run with Docker
+
+From the project root:
+
+```bash
+docker compose up --build
+```
+
+This starts:
+- the web application
+- PostgreSQL
+
+The app is exposed at:
+
+```text
+http://localhost:8085
+```
+
+The database is available at:
+
+```text
+localhost:5432
+```
+
+---
+
+## Build the complete solution
 
 ```bash
 dotnet build FirmezaSolution.sln
@@ -115,41 +280,24 @@ dotnet build FirmezaSolution.sln
 
 ---
 
-## Nota sobre puerto y ejecución
+## Suggested conventions
 
-La app ASP.NET puede fallar si el puerto 5287 ya está ocupado. En ese caso puedes ejecutarla con otro puerto:
-
-```bash
-dotnet run --project src/Firmeza.Web --urls http://localhost:5290
-```
-
----
-
-## Convenciones sugeridas
-
-- La capa Domain no debe referenciar a Web ni Infrastructure.
-- Application puede depender de Domain.
-- Infrastructure depende de Application y Domain.
-- Web puede depender de Application e Infrastructure.
-
-Esto mantiene una separación clara entre negocio, ejecución y tecnología.
+- Domain must not depend on Web or Infrastructure
+- Application coordinates use cases and defines contracts
+- Infrastructure implements those contracts with EF Core and PostgreSQL
+- Web only exposes functionality to the client
+- The frontend consumes the API and should not contain critical business logic
 
 ---
 
-## Estado actual
+## Current state
 
-La solución se encuentra organizada en capas limpias y lista para continuar con:
+The solution is organized in four main layers and is ready to continue with:
 
-- entidades del dominio
-- casos de uso
-- repositorios
-- persistencia con PostgreSQL
-- controladores y vistas
-- integración frontend/backend
+- domain entities
+- application services
+- infrastructure and persistence
+- controllers and endpoints
+- connection with Angular and Docker
 
-Si quieres, después puedo dejarte también un README más técnico con ejemplos de:
-
-- login con usuarios,
-- entidades del dominio,
-- repositorios y servicios,
-- y estructura exacta para cada proyecto.
+If you want, I can also create a more technical README by layer with concrete examples for entities, services, repositories, and endpoints.

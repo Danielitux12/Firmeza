@@ -6,9 +6,7 @@ services:
     image: firmeza-web
     container_name: firmeza-web
     ports:
-      - "8080:8080"
-    env_file:
-      - src/Firmeza.Web/.env
+      - "8085:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=firmeza;Username=firmeza;Password=coder1234"

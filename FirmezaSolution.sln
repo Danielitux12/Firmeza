@@ -1,14 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza.Domain", "Firmeza.Domain\Firmeza.Domain.csproj", "{CB119969-A15D-4D53-8265-5670D0EF818E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza.Domain", "src\Firmeza.Domain\Firmeza.Domain.csproj", "{CB119969-A15D-4D53-8265-5670D0EF818E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza.Application", "Firmeza.Application\Firmeza.Application.csproj", "{6A704D3D-260A-4626-9B70-93F026E1295D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza.Application", "src\Firmeza.Application\Firmeza.Application.csproj", "{6A704D3D-260A-4626-9B70-93F026E1295D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza.Infrastructure", "Firmeza.Infrastructure\Firmeza.Infrastructure.csproj", "{A1190EDC-5CFB-49C0-B65E-925CB8610F87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza.Infrastructure", "src\Firmeza.Infrastructure\Firmeza.Infrastructure.csproj", "{A1190EDC-5CFB-49C0-B65E-925CB8610F87}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza", "src\Firmeza.Web\Firmeza.csproj", "{B890BBA9-9382-4F7A-BB0A-62DFFFB3589E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza", "Firmeza.Web\Firmeza.csproj", "{B890BBA9-9382-4F7A-BB0A-62DFFFB3589E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,11 +33,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{CB119969-A15D-4D53-8265-5670D0EF818E} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{6A704D3D-260A-4626-9B70-93F026E1295D} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{A1190EDC-5CFB-49C0-B65E-925CB8610F87} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{B890BBA9-9382-4F7A-BB0A-62DFFFB3589E} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal
