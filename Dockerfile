@@ -22,12 +22,12 @@ COPY src/Firmeza.Domain/ ./src/Firmeza.Domain/
 COPY src/Firmeza.Application/ ./src/Firmeza.Application/
 COPY src/Firmeza.Infrastructure/ ./src/Firmeza.Infrastructure/
 COPY src/Firmeza.Web/ ./src/Firmeza.Web/
-RUN dotnet restore src/Firmeza.Web/Firmeza.csproj
+RUN dotnet restore src/Firmeza.Web/Firmeza.Web.csproj
 
 # Copia el Angular ya compilado dentro de wwwroot/dist
 COPY --from=frontend /build/src/Firmeza.Web/wwwroot/dist ./src/Firmeza.Web/wwwroot/dist
 
-RUN dotnet publish src/Firmeza.Web/Firmeza.csproj \
+RUN dotnet publish src/Firmeza.Web/Firmeza.Web.csproj \
     -c Release -o /app/publish --no-restore
 
 # ---------- Etapa 3: imagen final ----------
@@ -43,4 +43,4 @@ COPY --from=backend /app/publish ./
 USER app
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "Firmeza.dll"]
+ENTRYPOINT ["dotnet", "Firmeza.Web.dll"]

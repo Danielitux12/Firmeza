@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza.Application", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza.Infrastructure", "src\Firmeza.Infrastructure\Firmeza.Infrastructure.csproj", "{A1190EDC-5CFB-49C0-B65E-925CB8610F87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza.Web", "src\Firmeza.Web\Firmeza.csproj", "{B890BBA9-9382-4F7A-BB0A-62DFFFB3589E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firmeza.Web", "src\Firmeza.Web\Firmeza.Web.csproj", "{B890BBA9-9382-4F7A-BB0A-62DFFFB3589E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
