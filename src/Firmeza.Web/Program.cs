@@ -1,5 +1,7 @@
 using Firmeza.Configuration;
 using Firmeza.Infrastructure;
+using Firmeza.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 // Carga el archivo .env si existe; solo se usa en desarrollo local.
 EnvironmentConfiguration.LoadDotEnv();
@@ -22,6 +24,13 @@ builder.Services.AddInfrastructure(connectionString);
 
 var app = builder.Build();
 
+// Aplica migraciones pendientes automáticamente en la base de datos PostgreSQL
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
+
 // Configura el pipeline HTTP de la aplicación.
 if (!app.Environment.IsDevelopment())
 {
@@ -41,5 +50,7 @@ app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+app.MapControllers();
 
 app.Run();

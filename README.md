@@ -6,10 +6,11 @@ Project based on a layered architecture with a clear separation between business
 
 ```text
 FirmezaSolution/
-├─ Firmeza.Domain/              # Domain logic and entities
-├─ Firmeza.Application/         # Use cases, services, and contracts
-├─ Firmeza.Infrastructure/      # EF Core, PostgreSQL, repositories
-├─ Firmeza.Web/                 # ASP.NET Core MVC/Web API
+├─ src/
+│  ├─ Firmeza.Domain/              # Domain logic and entities
+│  ├─ Firmeza.Application/         # Use cases, services, and contracts
+│  ├─ Firmeza.Infrastructure/      # EF Core, PostgreSQL, repositories
+│  └─ Firmeza.Web/                 # ASP.NET Core MVC/Web API
 ├─ firmeza-frontend/            # Angular frontend
 ├─ .env.example                 # Example environment variables
 ├─ .env                         # Local environment variables (do not commit)
@@ -204,19 +205,19 @@ From the project root:
 
 ```bash
 dotnet restore
-dotnet run --project Firmeza.Web
+dotnet run --project src/Firmeza.Web
 ```
 
 The application is usually available at:
 
 ```text
-http://localhost:5290
+http://localhost:5287
 ```
 
 If you need to force a specific port:
 
 ```bash
-dotnet run --project Firmeza.Web --urls http://localhost:5290
+dotnet run --project src/Firmeza.Web --urls http://localhost:5290
 ```
 
 ---

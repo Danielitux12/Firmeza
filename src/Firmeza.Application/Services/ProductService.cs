@@ -3,7 +3,7 @@ using Firmeza.Domain.Entities;
 
 namespace Firmeza.Application.Services;
 
-public class ProductService
+public class ProductService : IProductService
 {
     private readonly IProductRepository _productRepository;
 

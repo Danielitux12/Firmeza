@@ -3,7 +3,7 @@ using Firmeza.Domain.Entities;
 
 namespace Firmeza.Application.Services;
 
-public class EmployeeService
+public class EmployeeService : IEmployeeService
 {
     private readonly IEmployeeRepository _employeeRepository;
 
@@ -30,5 +30,20 @@ public class EmployeeService
         }
 
         return await _employeeRepository.AddAsync(employee, cancellationToken);
+    }
+
+    public async Task<Employee> UpdateAsync(Employee employee, CancellationToken cancellationToken = default)
+    {
+        if (!employee.IsValid())
+        {
+            throw new InvalidOperationException("Employee data is not valid.");
+        }
+
+        return await _employeeRepository.UpdateAsync(employee, cancellationToken);
+    }
+
+    public Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return _employeeRepository.DeleteAsync(id, cancellationToken);
     }
 }
