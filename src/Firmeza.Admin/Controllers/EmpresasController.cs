@@ -76,6 +76,7 @@ public class EmpresasController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(EmpresaViewModel model)
     {
+        if (!ModelState.IsValid) return View(model);
         await ValidateDuplicatesAsync(model, null);
         var empresa = ToEntity(model);
         if (!empresa.IsValid()) ModelState.AddModelError(string.Empty, "Los datos de la empresa no son válidos.");
@@ -108,6 +109,7 @@ public class EmpresasController : Controller
     public async Task<IActionResult> Edit(int id, EmpresaViewModel model)
     {
         if (id != model.Id) return BadRequest();
+        if (!ModelState.IsValid) return View(model);
 
         var empresa = await _context.Empresas.FirstOrDefaultAsync(item => item.Id == id);
         if (empresa is null) return NotFound();
@@ -160,9 +162,11 @@ public class EmpresasController : Controller
     {
         var email = model.Email.Trim().ToLower();
         var nit = model.Nit.Trim().ToLower();
-        if (await _context.Empresas.AnyAsync(item => item.Id != excludingId && item.Email.ToLower() == email))
+        var query = _context.Empresas.AsQueryable();
+        if (excludingId.HasValue) query = query.Where(item => item.Id != excludingId.Value);
+        if (await query.AnyAsync(item => item.Email.ToLower() == email))
             ModelState.AddModelError(nameof(model.Email), "El correo ya pertenece a otra empresa.");
-        if (await _context.Empresas.AnyAsync(item => item.Id != excludingId && item.Nit.ToLower() == nit))
+        if (await query.AnyAsync(item => item.Nit.ToLower() == nit))
             ModelState.AddModelError(nameof(model.Nit), "El NIT ya pertenece a otra empresa.");
     }
 

@@ -5,6 +5,7 @@ using Firmeza.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Firmeza.Admin.Controllers;
 
@@ -132,13 +133,20 @@ public class ClientesController : Controller
             ModelState.AddModelError(nameof(model.AgeText), $"Ocurrió un error inesperado al procesar la edad: {ex.Message}");
         }
 
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
         // Valida que el documento y el correo no existan ya registrados.
-        if (await _context.Clientes.AnyAsync(c => c.DocumentNumber == model.DocumentNumber.Trim()))
+        var normalizedDocument = model.DocumentNumber.Trim().ToUpperInvariant();
+        var normalizedEmail = model.Email.Trim().ToLowerInvariant();
+        if (await _context.Clientes.AnyAsync(c => c.DocumentNumber.ToUpper() == normalizedDocument))
         {
             ModelState.AddModelError(nameof(model.DocumentNumber), "Ya existe un cliente registrado con este número de documento.");
         }
 
-        if (await _context.Clientes.AnyAsync(c => c.Email == model.Email.Trim().ToLower()))
+        if (await _context.Clientes.AnyAsync(c => c.Email.ToLower() == normalizedEmail))
         {
             ModelState.AddModelError(nameof(model.Email), "Ya existe un cliente registrado con este correo electrónico.");
         }
@@ -151,8 +159,8 @@ public class ClientesController : Controller
         var cliente = new Cliente
         {
             Name = model.Name.Trim(),
-            DocumentNumber = model.DocumentNumber.Trim(),
-            Email = model.Email.Trim().ToLower(),
+            DocumentNumber = normalizedDocument,
+            Email = normalizedEmail,
             Phone = model.Phone.Trim(),
             Address = model.Address.Trim(),
             // Guarda la fecha de nacimiento aproximada a partir de la edad ingresada.
@@ -166,7 +174,15 @@ public class ClientesController : Controller
         }
 
         _context.Clientes.Add(cliente);
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException exception) when (IsUniqueViolation(exception))
+        {
+            ModelState.AddModelError(string.Empty, "El correo o documento ya pertenece a otro cliente.");
+            return View(model);
+        }
 
         TempData["SuccessMessage"] = $"El cliente '{cliente.Name}' fue registrado correctamente.";
         return RedirectToAction(nameof(Index));
@@ -187,6 +203,7 @@ public class ClientesController : Controller
         var model = new ClienteViewModel
         {
             Id = cliente.Id,
+            IsActive = cliente.IsActive,
             Name = cliente.Name,
             DocumentNumber = cliente.DocumentNumber,
             Email = cliente.Email,
@@ -235,13 +252,20 @@ public class ClientesController : Controller
             ModelState.AddModelError(nameof(model.AgeText), "El número de edad ingresado excede el límite permitido.");
         }
 
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
         // Valida unicidad excluyendo al cliente actual.
-        if (await _context.Clientes.AnyAsync(c => c.DocumentNumber == model.DocumentNumber.Trim() && c.Id != id))
+        var normalizedDocument = model.DocumentNumber.Trim().ToUpperInvariant();
+        var normalizedEmail = model.Email.Trim().ToLowerInvariant();
+        if (await _context.Clientes.AnyAsync(c => c.DocumentNumber.ToUpper() == normalizedDocument && c.Id != id))
         {
             ModelState.AddModelError(nameof(model.DocumentNumber), "Ya existe otro cliente con este número de documento.");
         }
 
-        if (await _context.Clientes.AnyAsync(c => c.Email == model.Email.Trim().ToLower() && c.Id != id))
+        if (await _context.Clientes.AnyAsync(c => c.Email.ToLower() == normalizedEmail && c.Id != id))
         {
             ModelState.AddModelError(nameof(model.Email), "Ya existe otro cliente con este correo electrónico.");
         }
@@ -258,8 +282,8 @@ public class ClientesController : Controller
         }
 
         cliente.Name = model.Name.Trim();
-        cliente.DocumentNumber = model.DocumentNumber.Trim();
-        cliente.Email = model.Email.Trim().ToLower();
+        cliente.DocumentNumber = normalizedDocument;
+        cliente.Email = normalizedEmail;
         cliente.Phone = model.Phone.Trim();
         cliente.Address = model.Address.Trim();
         cliente.BirthDate = DateTime.UtcNow.AddYears(-parsedAge);
@@ -270,7 +294,15 @@ public class ClientesController : Controller
             return View(model);
         }
 
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException exception) when (IsUniqueViolation(exception))
+        {
+            ModelState.AddModelError(string.Empty, "El correo o documento ya pertenece a otro cliente.");
+            return View(model);
+        }
 
         TempData["SuccessMessage"] = $"Los datos de '{cliente.Name}' se actualizaron correctamente.";
         return RedirectToAction(nameof(Index));
@@ -337,6 +369,9 @@ public class ClientesController : Controller
         TempData["SuccessMessage"] = $"El cliente '{cliente.Name}' fue activado.";
         return RedirectToAction(nameof(Index));
     }
+
+    private static bool IsUniqueViolation(DbUpdateException exception) =>
+        exception.GetBaseException() is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 
     // Exporta el directorio de clientes a formato Excel (.xlsx).
     [HttpGet]
