@@ -1,5 +1,5 @@
 using Firmeza.Application.Interfaces;
-using Firmeza.Application.ViewModels.Customers;
+using Firmeza.Application.ViewModels.Clientes;
 using Firmeza.Domain.Entities;
 using Firmeza.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -12,13 +12,13 @@ namespace Firmeza.Admin.Controllers;
 /// Gestiona el registro y consulta de clientes con validaciones y manejo de excepciones en edad.
 /// </summary>
 [Authorize(Roles = "Administrador")]
-public class CustomersController : Controller
+public class ClientesController : Controller
 {
     private readonly AppDbContext _context;
     private readonly IExcelExporter _excelExporter;
     private readonly IPdfExporter _pdfExporter;
 
-    public CustomersController(
+    public ClientesController(
         AppDbContext context,
         IExcelExporter excelExporter,
         IPdfExporter pdfExporter)
@@ -30,22 +30,42 @@ public class CustomersController : Controller
 
     // Muestra la lista de clientes con soporte para búsqueda por nombre o número de documento.
     [HttpGet]
-    public async Task<IActionResult> Index(string? searchTerm)
+    public async Task<IActionResult> Index(string? search, string status = "active", int page = 1, int pageSize = 10)
     {
-        var query = _context.Customers.AsNoTracking().AsQueryable();
+        var query = _context.Clientes.AsNoTracking().AsQueryable();
+        pageSize = Math.Clamp(pageSize, 1, 100);
+        page = Math.Max(page, 1);
 
-        if (!string.IsNullOrWhiteSpace(searchTerm))
+        status = status.Trim().ToLowerInvariant();
+        if (status is not ("active" or "inactive" or "all"))
         {
-            var term = searchTerm.Trim().ToLower();
-            query = query.Where(c => c.FullName.ToLower().Contains(term) || c.DocumentNumber.ToLower().Contains(term));
+            status = "active";
         }
 
-        var customers = await query
-            .OrderBy(c => c.FullName)
-            .Select(c => new CustomerViewModel
+        if (status != "all")
+        {
+            var active = status == "active";
+            query = query.Where(c => c.IsActive == active);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(c => c.Name.ToLower().Contains(term)
+                || c.Email.ToLower().Contains(term)
+                || c.DocumentNumber.ToLower().Contains(term));
+        }
+
+        var totalCount = await query.CountAsync();
+        var clientes = await query
+            .OrderBy(c => c.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(c => new ClienteViewModel
             {
                 Id = c.Id,
-                FullName = c.FullName,
+                IsActive = c.IsActive,
+                Name = c.Name,
                 DocumentNumber = c.DocumentNumber,
                 Email = c.Email,
                 Phone = c.Phone,
@@ -55,10 +75,15 @@ public class CustomersController : Controller
             })
             .ToListAsync();
 
-        var model = new CustomerFilterViewModel
+        var model = new ClienteFilterViewModel
         {
-            SearchTerm = searchTerm,
-            Customers = customers
+            SearchTerm = search,
+            Status = status,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Clientes = clientes,
         };
 
         return View(model);
@@ -68,13 +93,13 @@ public class CustomersController : Controller
     [HttpGet]
     public IActionResult Create()
     {
-        return View(new CustomerViewModel());
+        return View(new ClienteViewModel());
     }
 
     // Procesa la creación del cliente, validando unicidad de correo/documento y convirtiendo la edad con try-catch.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CustomerViewModel model)
+    public async Task<IActionResult> Create(ClienteViewModel model)
     {
         // Requisito 6: El campo "Edad" se recibe como texto; convertir con int.Parse dentro de try-catch y mostrar mensaje amigable.
         int parsedAge = 0;
@@ -108,12 +133,12 @@ public class CustomersController : Controller
         }
 
         // Valida que el documento y el correo no existan ya registrados.
-        if (await _context.Customers.AnyAsync(c => c.DocumentNumber == model.DocumentNumber.Trim()))
+        if (await _context.Clientes.AnyAsync(c => c.DocumentNumber == model.DocumentNumber.Trim()))
         {
             ModelState.AddModelError(nameof(model.DocumentNumber), "Ya existe un cliente registrado con este número de documento.");
         }
 
-        if (await _context.Customers.AnyAsync(c => c.Email == model.Email.Trim().ToLower()))
+        if (await _context.Clientes.AnyAsync(c => c.Email == model.Email.Trim().ToLower()))
         {
             ModelState.AddModelError(nameof(model.Email), "Ya existe un cliente registrado con este correo electrónico.");
         }
@@ -123,9 +148,9 @@ public class CustomersController : Controller
             return View(model);
         }
 
-        var customer = new Customer
+        var cliente = new Cliente
         {
-            FullName = model.FullName.Trim(),
+            Name = model.Name.Trim(),
             DocumentNumber = model.DocumentNumber.Trim(),
             Email = model.Email.Trim().ToLower(),
             Phone = model.Phone.Trim(),
@@ -134,10 +159,16 @@ public class CustomersController : Controller
             BirthDate = DateTime.UtcNow.AddYears(-parsedAge)
         };
 
-        _context.Customers.Add(customer);
+        if (!cliente.IsValid())
+        {
+            ModelState.AddModelError(string.Empty, "Los datos del cliente no son válidos.");
+            return View(model);
+        }
+
+        _context.Clientes.Add(cliente);
         await _context.SaveChangesAsync();
 
-        TempData["SuccessMessage"] = $"El cliente '{customer.FullName}' fue registrado correctamente.";
+        TempData["SuccessMessage"] = $"El cliente '{cliente.Name}' fue registrado correctamente.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -145,22 +176,22 @@ public class CustomersController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
-        var customer = await _context.Customers.FindAsync(id);
-        if (customer is null)
+        var cliente = await _context.Clientes.FindAsync(id);
+        if (cliente is null)
         {
             return NotFound();
         }
 
-        int? currentAge = customer.BirthDate.HasValue ? DateTime.UtcNow.Year - customer.BirthDate.Value.Year : null;
+        int? currentAge = cliente.BirthDate.HasValue ? DateTime.UtcNow.Year - cliente.BirthDate.Value.Year : null;
 
-        var model = new CustomerViewModel
+        var model = new ClienteViewModel
         {
-            Id = customer.Id,
-            FullName = customer.FullName,
-            DocumentNumber = customer.DocumentNumber,
-            Email = customer.Email,
-            Phone = customer.Phone,
-            Address = customer.Address,
+            Id = cliente.Id,
+            Name = cliente.Name,
+            DocumentNumber = cliente.DocumentNumber,
+            Email = cliente.Email,
+            Phone = cliente.Phone,
+            Address = cliente.Address,
             AgeText = currentAge?.ToString() ?? string.Empty,
             ProcessedAge = currentAge
         };
@@ -171,7 +202,7 @@ public class CustomersController : Controller
     // Guarda las modificaciones realizadas sobre un cliente.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, CustomerViewModel model)
+    public async Task<IActionResult> Edit(int id, ClienteViewModel model)
     {
         if (id != model.Id)
         {
@@ -205,12 +236,12 @@ public class CustomersController : Controller
         }
 
         // Valida unicidad excluyendo al cliente actual.
-        if (await _context.Customers.AnyAsync(c => c.DocumentNumber == model.DocumentNumber.Trim() && c.Id != id))
+        if (await _context.Clientes.AnyAsync(c => c.DocumentNumber == model.DocumentNumber.Trim() && c.Id != id))
         {
             ModelState.AddModelError(nameof(model.DocumentNumber), "Ya existe otro cliente con este número de documento.");
         }
 
-        if (await _context.Customers.AnyAsync(c => c.Email == model.Email.Trim().ToLower() && c.Id != id))
+        if (await _context.Clientes.AnyAsync(c => c.Email == model.Email.Trim().ToLower() && c.Id != id))
         {
             ModelState.AddModelError(nameof(model.Email), "Ya existe otro cliente con este correo electrónico.");
         }
@@ -220,22 +251,28 @@ public class CustomersController : Controller
             return View(model);
         }
 
-        var customer = await _context.Customers.FindAsync(id);
-        if (customer is null)
+        var cliente = await _context.Clientes.FindAsync(id);
+        if (cliente is null)
         {
             return NotFound();
         }
 
-        customer.FullName = model.FullName.Trim();
-        customer.DocumentNumber = model.DocumentNumber.Trim();
-        customer.Email = model.Email.Trim().ToLower();
-        customer.Phone = model.Phone.Trim();
-        customer.Address = model.Address.Trim();
-        customer.BirthDate = DateTime.UtcNow.AddYears(-parsedAge);
+        cliente.Name = model.Name.Trim();
+        cliente.DocumentNumber = model.DocumentNumber.Trim();
+        cliente.Email = model.Email.Trim().ToLower();
+        cliente.Phone = model.Phone.Trim();
+        cliente.Address = model.Address.Trim();
+        cliente.BirthDate = DateTime.UtcNow.AddYears(-parsedAge);
+
+        if (!cliente.IsValid())
+        {
+            ModelState.AddModelError(string.Empty, "Los datos del cliente no son válidos.");
+            return View(model);
+        }
 
         await _context.SaveChangesAsync();
 
-        TempData["SuccessMessage"] = $"Los datos de '{customer.FullName}' se actualizaron correctamente.";
+        TempData["SuccessMessage"] = $"Los datos de '{cliente.Name}' se actualizaron correctamente.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -243,80 +280,61 @@ public class CustomersController : Controller
     [HttpGet]
     public async Task<IActionResult> Details(int id)
     {
-        var customer = await _context.Customers
+        var cliente = await _context.Clientes
             .AsNoTracking()
             .Include(c => c.Sales)
             .FirstOrDefaultAsync(c => c.Id == id);
 
-        if (customer is null)
+        if (cliente is null)
         {
             return NotFound();
         }
 
-        var model = new CustomerViewModel
+        var model = new ClienteViewModel
         {
-            Id = customer.Id,
-            FullName = customer.FullName,
-            DocumentNumber = customer.DocumentNumber,
-            Email = customer.Email,
-            Phone = customer.Phone,
-            Address = customer.Address,
-            ProcessedAge = customer.BirthDate.HasValue ? DateTime.UtcNow.Year - customer.BirthDate.Value.Year : null
+            Id = cliente.Id,
+            IsActive = cliente.IsActive,
+            Name = cliente.Name,
+            DocumentNumber = cliente.DocumentNumber,
+            Email = cliente.Email,
+            Phone = cliente.Phone,
+            Address = cliente.Address,
+            ProcessedAge = cliente.BirthDate.HasValue ? DateTime.UtcNow.Year - cliente.BirthDate.Value.Year : null
         };
 
         return View(model);
     }
 
-    // Muestra la pantalla de confirmación para eliminar un cliente.
-    [HttpGet]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var customer = await _context.Customers
-            .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == id);
-
-        if (customer is null)
-        {
-            return NotFound();
-        }
-
-        var model = new CustomerViewModel
-        {
-            Id = customer.Id,
-            FullName = customer.FullName,
-            DocumentNumber = customer.DocumentNumber,
-            Email = customer.Email,
-            Phone = customer.Phone,
-            Address = customer.Address,
-            ProcessedAge = customer.BirthDate.HasValue ? DateTime.UtcNow.Year - customer.BirthDate.Value.Year : null
-        };
-
-        return View(model);
-    }
-
-    // Procesa la eliminación del cliente si no posee ventas asociadas.
-    [HttpPost, ActionName("Delete")]
+    [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int id)
+    public async Task<IActionResult> Suspend(int id)
     {
-        var customer = await _context.Customers.FindAsync(id);
-        if (customer is null)
+        var cliente = await _context.Clientes.FindAsync(id);
+        if (cliente is null)
         {
             return NotFound();
         }
 
-        // Verifica si tiene ventas registradas para no romper la integridad referencial.
-        var hasSales = await _context.Sales.AnyAsync(s => s.CustomerId == id);
-        if (hasSales)
-        {
-            TempData["ErrorMessage"] = $"No se puede eliminar el cliente '{customer.FullName}' porque tiene ventas asociadas en el sistema.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        _context.Customers.Remove(customer);
+        cliente.Deactivate();
         await _context.SaveChangesAsync();
 
-        TempData["SuccessMessage"] = $"El cliente '{customer.FullName}' fue eliminado exitosamente.";
+        TempData["SuccessMessage"] = $"El cliente '{cliente.Name}' fue suspendido.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Activate(int id)
+    {
+        var cliente = await _context.Clientes.FindAsync(id);
+        if (cliente is null)
+        {
+            return NotFound();
+        }
+
+        cliente.Activate();
+        await _context.SaveChangesAsync();
+        TempData["SuccessMessage"] = $"El cliente '{cliente.Name}' fue activado.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -324,12 +342,12 @@ public class CustomersController : Controller
     [HttpGet]
     public async Task<IActionResult> ExportExcel()
     {
-        var customers = await _context.Customers
+        var clientes = await _context.Clientes
             .AsNoTracking()
-            .OrderBy(c => c.FullName)
+            .OrderBy(c => c.Name)
             .ToListAsync();
 
-        var fileBytes = _excelExporter.ExportCustomers(customers);
+        var fileBytes = _excelExporter.ExportClientes(clientes);
         return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Clientes_{DateTime.Now:yyyyMMdd_HHmm}.xlsx");
     }
 
@@ -337,12 +355,12 @@ public class CustomersController : Controller
     [HttpGet]
     public async Task<IActionResult> ExportPdf()
     {
-        var customers = await _context.Customers
+        var clientes = await _context.Clientes
             .AsNoTracking()
-            .OrderBy(c => c.FullName)
+            .OrderBy(c => c.Name)
             .ToListAsync();
 
-        var fileBytes = _pdfExporter.ExportCustomers(customers);
+        var fileBytes = _pdfExporter.ExportClientes(clientes);
         return File(fileBytes, "application/pdf", $"Clientes_{DateTime.Now:yyyyMMdd_HHmm}.pdf");
     }
 }

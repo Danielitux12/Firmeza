@@ -36,14 +36,7 @@
 
                     <div class="col-md-4">
                         <label class="text-muted small text-uppercase fw-semibold d-block">Estado</label>
-                        @if (Model.IsAvailable)
-                        {
-                            <span class="badge-available">Disponible para venta</span>
-                        }
-                        else
-                        {
-                            <span class="badge-unavailable">No disponible / Agotado</span>
-                        }
+                        <span class="@(Model.Status == ProductStatus.Available ? "badge-available" : "badge-unavailable")">@Model.StatusLabel</span>
                     </div>
 
                     <div class="col-12">

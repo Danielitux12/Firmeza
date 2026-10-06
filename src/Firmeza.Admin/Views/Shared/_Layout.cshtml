@@ -37,9 +37,15 @@
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Customers" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Customers" ? "active" : "")">
+                    <a asp-controller="Clientes" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Clientes" ? "active" : "")">
                         <i class="bi bi-people"></i>
                         <span>Clientes</span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Empresas" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Empresas" ? "active" : "")">
+                        <i class="bi bi-building"></i>
+                        <span>Empresas</span>
                     </a>
                 </li>
                 <li>

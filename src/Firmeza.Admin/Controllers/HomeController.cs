@@ -30,7 +30,7 @@ public class HomeController : Controller
             TotalProducts = await _context.Products.CountAsync(),
 
             // Cuenta el total de clientes registrados.
-            TotalCustomers = await _context.Customers.CountAsync(),
+            TotalClientes = await _context.Clientes.CountAsync(),
 
             // Cuenta el total de ventas generadas.
             TotalSales = await _context.Sales.CountAsync(),

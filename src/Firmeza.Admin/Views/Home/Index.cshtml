@@ -40,11 +40,11 @@
 
     <!-- Tarjeta 2: Total de Clientes -->
     <div class="col-12 col-md-4">
-        <div class="card card-firmeza metric-card metric-customers p-4 h-100">
+        <div class="card card-firmeza metric-card metric-clientes p-4 h-100">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <span class="text-muted text-uppercase fw-semibold small">Total de Clientes</span>
-                    <div class="metric-number text-success">@Model.TotalCustomers</div>
+                    <div class="metric-number text-success">@Model.TotalClientes</div>
                     <small class="text-muted mt-2 d-block">Cartera registrada</small>
                 </div>
                 <div class="bg-success-subtle text-success p-3 rounded-circle">
@@ -52,7 +52,7 @@
                 </div>
             </div>
             <hr class="my-3 text-muted" />
-            <a asp-controller="Customers" asp-action="Index" class="text-decoration-none small fw-semibold text-success d-flex align-items-center justify-content-between">
+            <a asp-controller="Clientes" asp-action="Index" class="text-decoration-none small fw-semibold text-success d-flex align-items-center justify-content-between">
                 <span>Gestionar clientes</span>
                 <i class="bi bi-arrow-right"></i>
             </a>
@@ -98,7 +98,7 @@
                 </a>
             </div>
             <div class="col-md-4">
-                <a asp-controller="Customers" asp-action="Create" class="btn btn-outline-success w-100 py-3 text-start d-flex align-items-center gap-3">
+                <a asp-controller="Clientes" asp-action="Create" class="btn btn-outline-success w-100 py-3 text-start d-flex align-items-center gap-3">
                     <i class="bi bi-person-plus fs-3"></i>
                     <div>
                         <div class="fw-bold">Nuevo Cliente</div>

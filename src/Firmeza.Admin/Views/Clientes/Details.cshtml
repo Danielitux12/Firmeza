@@ -1,4 +1,4 @@
-@model Firmeza.Application.ViewModels.Customers.CustomerViewModel
+@model Firmeza.Application.ViewModels.Clientes.ClienteViewModel
 @{
     ViewData["Title"] = "Detalle del Cliente";
 }
@@ -16,12 +16,17 @@
                 <div class="row g-4">
                     <div class="col-md-6">
                         <label class="text-muted small text-uppercase fw-semibold d-block">Nombre Completo</label>
-                        <span class="fs-5 fw-bold">@Model.FullName</span>
+                        <span class="fs-5 fw-bold">@Model.Name</span>
                     </div>
 
                     <div class="col-md-6">
                         <label class="text-muted small text-uppercase fw-semibold d-block">Número de Documento</label>
                         <span class="badge bg-secondary-subtle text-secondary border fs-6 font-monospace">@Model.DocumentNumber</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-semibold d-block">Estado</label>
+                        <span class="badge @(Model.IsActive ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary")">@(Model.IsActive ? "Activo" : "Suspendido")</span>
                     </div>
 
                     <div class="col-md-6">
@@ -53,9 +58,12 @@
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
                         <i class="bi bi-pencil me-1"></i> Editar
                     </a>
-                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
-                        <i class="bi bi-trash me-1"></i> Eliminar
-                    </a>
+                    <form asp-action="@(Model.IsActive ? "Suspend" : "Activate")" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-@(Model.IsActive ? "warning" : "success")">
+                            <i class="bi bi-@(Model.IsActive ? "pause-circle" : "play-circle") me-1"></i> @(Model.IsActive ? "Suspender" : "Activar")
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
