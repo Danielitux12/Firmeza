@@ -11,7 +11,6 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
     {
         builder.ToTable("sales");
 
-        builder.HasKey(s => s.Id);
         builder.Property(s => s.SaleNumber).IsRequired().HasMaxLength(50);
         builder.HasIndex(s => s.SaleNumber).IsUnique();
 
@@ -20,11 +19,12 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
         builder.Property(s => s.Tax).HasPrecision(18, 2).IsRequired();
         builder.Property(s => s.Total).HasPrecision(18, 2).IsRequired();
         builder.Property(s => s.ReceiptPath).HasMaxLength(500);
+        builder.Property(s => s.IsActive).HasDefaultValue(true).IsRequired();
 
         // Relación N-1: Cada venta pertenece a un cliente.
-        builder.HasOne(s => s.Customer)
+        builder.HasOne(s => s.Cliente)
             .WithMany(c => c.Sales)
-            .HasForeignKey(s => s.CustomerId)
+            .HasForeignKey(s => s.ClienteId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Relación 1-N: Una venta contiene varios detalles (eliminación en cascada para detalles).

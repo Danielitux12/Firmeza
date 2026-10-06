@@ -67,13 +67,13 @@ public class ReceiptGenerator : IReceiptGenerator
                     {
                         row.RelativeItem().Column(c =>
                         {
-                            c.Item().Text($"Cliente: {sale.Customer?.FullName ?? "Venta al mostrador"}").FontSize(8).Bold();
-                            c.Item().Text($"Documento: {sale.Customer?.DocumentNumber ?? "-"}").FontSize(8);
+                            c.Item().Text($"Cliente: {sale.Cliente?.Name ?? "Venta al mostrador"}").FontSize(8).Bold();
+                            c.Item().Text($"Documento: {sale.Cliente?.DocumentNumber ?? "-"}").FontSize(8);
                         });
                         row.RelativeItem().Column(c =>
                         {
-                            c.Item().Text($"Teléfono: {sale.Customer?.Phone ?? "-"}").FontSize(8);
-                            c.Item().Text($"Dirección: {sale.Customer?.Address ?? "-"}").FontSize(8);
+                            c.Item().Text($"Teléfono: {sale.Cliente?.Phone ?? "-"}").FontSize(8);
+                            c.Item().Text($"Dirección: {sale.Cliente?.Address ?? "-"}").FontSize(8);
                         });
                     });
 
@@ -197,13 +197,13 @@ public class ReceiptGenerator : IReceiptGenerator
                     {
                         row.RelativeItem().Column(c =>
                         {
-                            c.Item().Text($"Cliente: {sale.Customer?.FullName ?? "Venta al mostrador"}").FontSize(8).Bold();
-                            c.Item().Text($"Documento: {sale.Customer?.DocumentNumber ?? "-"}").FontSize(8);
+                            c.Item().Text($"Cliente: {sale.Cliente?.Name ?? "Venta al mostrador"}").FontSize(8).Bold();
+                            c.Item().Text($"Documento: {sale.Cliente?.DocumentNumber ?? "-"}").FontSize(8);
                         });
                         row.RelativeItem().Column(c =>
                         {
-                            c.Item().Text($"Teléfono: {sale.Customer?.Phone ?? "-"}").FontSize(8);
-                            c.Item().Text($"Dirección: {sale.Customer?.Address ?? "-"}").FontSize(8);
+                            c.Item().Text($"Teléfono: {sale.Cliente?.Phone ?? "-"}").FontSize(8);
+                            c.Item().Text($"Dirección: {sale.Cliente?.Address ?? "-"}").FontSize(8);
                         });
                     });
 

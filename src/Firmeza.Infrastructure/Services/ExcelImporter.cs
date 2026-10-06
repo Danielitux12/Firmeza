@@ -3,6 +3,7 @@ using System.Text;
 using Firmeza.Application.Common;
 using Firmeza.Application.Interfaces;
 using Firmeza.Domain.Entities;
+using Firmeza.Domain.Enums;
 using Firmeza.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
@@ -65,7 +66,7 @@ public class ExcelImporter : IExcelImporter
         }
 
         // Carga clientes y productos existentes en memoria para optimizar búsquedas e inserción/actualización.
-        var existingCustomers = await _context.Customers.ToDictionaryAsync(c => c.DocumentNumber.Trim(), cancellationToken);
+        var existingClientes = await _context.Clientes.ToDictionaryAsync(c => c.DocumentNumber.Trim(), cancellationToken);
         var existingProducts = await _context.Products.ToDictionaryAsync(p => p.Name.Trim().ToLower(), cancellationToken);
 
         // Agrupador en memoria de ventas por (DocumentoCliente, Fecha, NumeroVenta)
@@ -84,13 +85,13 @@ public class ExcelImporter : IExcelImporter
             bool rowHasError = false;
 
             // --- Lectura y validación de Cliente ---
-            string customerName = GetCellString(worksheet, row, colMap, "cliente");
+            string clienteName = GetCellString(worksheet, row, colMap, "cliente");
             string documentNumber = GetCellString(worksheet, row, colMap, "documento");
             string email = GetCellString(worksheet, row, colMap, "email");
             string phone = GetCellString(worksheet, row, colMap, "telefono");
             string address = GetCellString(worksheet, row, colMap, "direccion");
 
-            if (string.IsNullOrWhiteSpace(customerName))
+            if (string.IsNullOrWhiteSpace(clienteName))
             {
                 result.Errors.Add(new ImportRowError { RowNumber = row, ColumnName = "Cliente", ErrorMessage = "El nombre del cliente es obligatorio." });
                 rowHasError = true;
@@ -153,43 +154,44 @@ public class ExcelImporter : IExcelImporter
 
             // 3. Normalizar o actualizar Cliente por DocumentNumber
             documentNumber = documentNumber.Trim();
-            if (!existingCustomers.TryGetValue(documentNumber, out var customer))
+            if (!existingClientes.TryGetValue(documentNumber, out var cliente))
             {
                 // Crea nuevo cliente si no existe
                 string validEmail = string.IsNullOrWhiteSpace(email) ? $"cliente_{documentNumber}@firmeza.com" : email.Trim();
-                customer = new Customer
+                cliente = new Cliente
                 {
-                    FullName = customerName.Trim(),
+                    Name = clienteName.Trim(),
                     DocumentNumber = documentNumber,
                     Email = validEmail,
                     Phone = phone?.Trim() ?? string.Empty,
                     Address = address?.Trim() ?? string.Empty
                 };
-                _context.Customers.Add(customer);
-                existingCustomers[documentNumber] = customer;
-                result.CustomersProcessed++;
+                _context.Clientes.Add(cliente);
+                existingClientes[documentNumber] = cliente;
+                result.ClientesProcessed++;
             }
             else
             {
                 // Actualiza información si venía en el archivo
-                customer.FullName = customerName.Trim();
-                if (!string.IsNullOrWhiteSpace(email)) customer.Email = email.Trim();
-                if (!string.IsNullOrWhiteSpace(phone)) customer.Phone = phone.Trim();
-                if (!string.IsNullOrWhiteSpace(address)) customer.Address = address.Trim();
+                cliente.Name = clienteName.Trim();
+                if (!string.IsNullOrWhiteSpace(email)) cliente.Email = email.Trim();
+                if (!string.IsNullOrWhiteSpace(phone)) cliente.Phone = phone.Trim();
+                if (!string.IsNullOrWhiteSpace(address)) cliente.Address = address.Trim();
             }
 
             // 4. Normalizar o actualizar Producto por Name
             string productKey = productName.Trim().ToLower();
             if (!existingProducts.TryGetValue(productKey, out var product))
             {
+                int initialStock = stock > 0 ? stock : quantity * 2;
                 product = new Product
                 {
                     Name = productName.Trim(),
                     Description = description?.Trim() ?? string.Empty,
                     Category = category.Trim(),
                     Price = price,
-                    Stock = stock > 0 ? stock : quantity * 2, // Si no venía stock, asegura suficiente
-                    IsAvailable = true
+                    Stock = initialStock,
+                    Status = initialStock > 0 ? ProductStatus.Available : ProductStatus.Unavailable
                 };
                 _context.Products.Add(product);
                 existingProducts[productKey] = product;
@@ -206,16 +208,16 @@ public class ExcelImporter : IExcelImporter
             // 5. Agrupar o crear Venta asociada
             if (string.IsNullOrWhiteSpace(saleNumber))
             {
-                saleNumber = $"IMP-{saleDate:yyyyMMdd}-{customer.DocumentNumber.Substring(0, Math.Min(4, customer.DocumentNumber.Length))}";
+                saleNumber = $"IMP-{saleDate:yyyyMMdd}-{cliente.DocumentNumber.Substring(0, Math.Min(4, cliente.DocumentNumber.Length))}";
             }
 
-            string saleBufferKey = $"{customer.DocumentNumber}_{saleNumber}".ToUpper();
+            string saleBufferKey = $"{cliente.DocumentNumber}_{saleNumber}".ToUpper();
             if (!salesBuffer.TryGetValue(saleBufferKey, out var sale))
             {
                 sale = new Sale
                 {
                     SaleNumber = saleNumber,
-                    Customer = customer,
+                    Cliente = cliente,
                     Date = saleDate
                 };
                 salesBuffer[saleBufferKey] = sale;
@@ -235,7 +237,10 @@ public class ExcelImporter : IExcelImporter
 
             // Descuenta stock
             product.Stock = Math.Max(0, product.Stock - quantity);
-            if (product.Stock == 0) product.IsAvailable = false;
+            if (product.Stock == 0 && product.Status == ProductStatus.Available)
+            {
+                product.Status = ProductStatus.Unavailable;
+            }
 
             result.SuccessRows++;
         }
@@ -321,7 +326,7 @@ public class ExcelImporter : IExcelImporter
             sb.AppendLine($"Fecha y Hora (UTC): {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}");
             sb.AppendLine($"Total filas evaluadas: {result.TotalRowsRead}");
             sb.AppendLine($"Filas procesadas exitosamente: {result.SuccessRows}");
-            sb.AppendLine($"Clientes creados/actualizados: {result.CustomersProcessed}");
+            sb.AppendLine($"Clientes creados/actualizados: {result.ClientesProcessed}");
             sb.AppendLine($"Productos creados/actualizados: {result.ProductsProcessed}");
             sb.AppendLine($"Ventas creadas: {result.SalesCreated}");
             sb.AppendLine($"Total de errores detectados: {result.Errors.Count}");

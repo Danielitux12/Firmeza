@@ -1,5 +1,6 @@
 using Firmeza.Application.Interfaces;
 using Firmeza.Domain.Entities;
+using Firmeza.Domain.Enums;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -64,7 +65,13 @@ public class PdfExporter : IPdfExporter
                         table.Cell().Background(bg).Padding(5).Text(p.Category).FontSize(8);
                         table.Cell().Background(bg).Padding(5).AlignRight().Text($"${p.Price:N2}").FontSize(8);
                         table.Cell().Background(bg).Padding(5).AlignCenter().Text(p.Stock.ToString()).FontSize(8);
-                        table.Cell().Background(bg).Padding(5).AlignCenter().Text(p.IsAvailable ? "Disponible" : "Agotado").FontSize(8);
+                        table.Cell().Background(bg).Padding(5).AlignCenter().Text(p.Status switch
+                        {
+                            ProductStatus.Available => "Disponible",
+                            ProductStatus.Unavailable => "No disponible",
+                            ProductStatus.Discontinued => "Descontinuado",
+                            _ => "Desconocido"
+                        }).FontSize(8);
                     }
                 });
 
@@ -74,9 +81,9 @@ public class PdfExporter : IPdfExporter
     }
 
     // Genera el documento PDF con el listado de clientes.
-    public byte[] ExportCustomers(IEnumerable<Customer> customers)
+    public byte[] ExportClientes(IEnumerable<Cliente> clientes)
     {
-        var list = customers.ToList();
+        var list = clientes.ToList();
         return Document.Create(container =>
         {
             container.Page(page =>
@@ -100,7 +107,7 @@ public class PdfExporter : IPdfExporter
                     table.Header(header =>
                     {
                         header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("ID").Bold().FontSize(9);
-                        header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Nombre Completo").Bold().FontSize(9);
+                        header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Nombre").Bold().FontSize(9);
                         header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Documento").Bold().FontSize(9);
                         header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Email").Bold().FontSize(9);
                         header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Teléfono").Bold().FontSize(9);
@@ -112,7 +119,7 @@ public class PdfExporter : IPdfExporter
                         var bg = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
 
                         table.Cell().Background(bg).Padding(5).Text(c.Id.ToString()).FontSize(8);
-                        table.Cell().Background(bg).Padding(5).Text(c.FullName).FontSize(8);
+                        table.Cell().Background(bg).Padding(5).Text(c.Name).FontSize(8);
                         table.Cell().Background(bg).Padding(5).Text(c.DocumentNumber).FontSize(8);
                         table.Cell().Background(bg).Padding(5).Text(c.Email).FontSize(8);
                         table.Cell().Background(bg).Padding(5).Text(c.Phone).FontSize(8);
@@ -166,7 +173,7 @@ public class PdfExporter : IPdfExporter
 
                         table.Cell().Background(bg).Padding(5).Text(s.SaleNumber).FontSize(8);
                         table.Cell().Background(bg).Padding(5).Text(s.Date.ToString("yyyy-MM-dd")).FontSize(8);
-                        table.Cell().Background(bg).Padding(5).Text(s.Customer?.FullName ?? "N/A").FontSize(8);
+                        table.Cell().Background(bg).Padding(5).Text(s.Cliente?.Name ?? "N/A").FontSize(8);
                         table.Cell().Background(bg).Padding(5).AlignRight().Text($"${s.Subtotal:N2}").FontSize(8);
                         table.Cell().Background(bg).Padding(5).AlignRight().Text($"${s.Tax:N2}").FontSize(8);
                         table.Cell().Background(bg).Padding(5).AlignRight().Text($"${s.Total:N2}").FontSize(8).Bold();

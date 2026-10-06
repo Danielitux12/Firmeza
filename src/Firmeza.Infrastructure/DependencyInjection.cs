@@ -39,6 +39,8 @@ public static class DependencyInjection
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<ProductService>();
+        services.AddScoped<IEmpresaRepository, EmpresaRepository>();
+        services.AddScoped<IEmpresaService, EmpresaService>();
 
         // Registra servicios de Excel (EPPlus) y PDF (QuestPDF).
         services.AddScoped<IExcelImporter, ExcelImporter>();

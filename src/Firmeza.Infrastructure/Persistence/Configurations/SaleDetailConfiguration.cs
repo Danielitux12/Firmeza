@@ -11,10 +11,10 @@ public class SaleDetailConfiguration : IEntityTypeConfiguration<SaleDetail>
     {
         builder.ToTable("sale_details");
 
-        builder.HasKey(sd => sd.Id);
         builder.Property(sd => sd.Quantity).IsRequired();
         builder.Property(sd => sd.UnitPrice).HasPrecision(18, 2).IsRequired();
         builder.Property(sd => sd.LineTotal).HasPrecision(18, 2).IsRequired();
+        builder.Property(sd => sd.IsActive).HasDefaultValue(true).IsRequired();
 
         // Relación N-1 con Sale.
         builder.HasOne(sd => sd.Sale)
