@@ -13,7 +13,7 @@ public class SaleTests
         {
             Id = 1,
             SaleNumber = "VTA-00001",
-            CustomerId = 10,
+            ClienteId = 10,
             SaleDetails = new List<SaleDetail>
             {
                 new SaleDetail
