@@ -1,3 +1,5 @@
+using Firmeza.Domain.Enums;
+
 namespace Firmeza.Application.ViewModels.Products;
 
 /// <summary>
@@ -11,8 +13,7 @@ public class ProductFilterViewModel
     // Categoría seleccionada para filtrar.
     public string? SelectedCategory { get; set; }
 
-    // Estado de disponibilidad seleccionado (null = todos, true = disponibles, false = no disponibles).
-    public bool? AvailabilityFilter { get; set; }
+    public ProductStatus? StatusFilter { get; set; }
 
     // Lista de categorías únicas existentes para cargar en el dropdown de filtros.
     public List<string> AvailableCategories { get; set; } = new();

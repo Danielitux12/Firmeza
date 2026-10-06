@@ -1,15 +1,14 @@
-namespace Firmeza.Application.DTOs.Auth;
+namespace Firmeza.Application.DTOs.Trabajadores;
 
-/// <summary>
-/// Modelo de datos para registrar un nuevo cliente desde la API.
-/// </summary>
-public class RegisterRequestDto
+public class TrabajadorDto
 {
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string DocumentNumber { get; set; } = string.Empty;
+    public string Position { get; set; } = string.Empty;
+    public decimal Salary { get; set; }
     public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
-    public int Age { get; set; }
     public string Address { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
 }

@@ -18,6 +18,7 @@ public class ProductMappingProfile : Profile
         // De DTO de creación/edición a Entidad
         CreateMap<SaveProductDto, Product>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.IsActive, opt => opt.Ignore())
             .ForMember(dest => dest.SaleDetails, opt => opt.Ignore());
     }
 }

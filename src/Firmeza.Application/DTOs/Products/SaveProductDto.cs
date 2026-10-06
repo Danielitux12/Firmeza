@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Firmeza.Domain.Enums;
 
 namespace Firmeza.Application.DTOs.Products;
 
@@ -24,5 +25,8 @@ public class SaveProductDto
     [MaxLength(100)]
     public string Category { get; set; } = string.Empty;
 
-    public bool IsAvailable { get; set; } = true;
+    [EnumDataType(typeof(ProductStatus))]
+    public ProductStatus Status { get; set; } = ProductStatus.Available;
+
+    public int? EmpresaId { get; set; }
 }

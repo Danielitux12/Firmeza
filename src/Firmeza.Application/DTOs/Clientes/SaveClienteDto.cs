@@ -1,15 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Firmeza.Application.DTOs.Customers;
+namespace Firmeza.Application.DTOs.Clientes;
 
 /// <summary>
 /// Modelo de datos para crear o actualizar un cliente vía API.
 /// </summary>
-public class SaveCustomerDto
+public class SaveClienteDto
 {
-    [Required(ErrorMessage = "El nombre completo es obligatorio")]
+    [Required(ErrorMessage = "El nombre es obligatorio")]
     [MaxLength(150)]
-    public string FullName { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "El número de documento es obligatorio")]
     [MaxLength(20)]

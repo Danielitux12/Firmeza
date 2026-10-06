@@ -10,10 +10,10 @@ public class SaleDetailsViewModel
     public DateTime Date { get; set; }
 
     // Datos del cliente
-    public string CustomerName { get; set; } = string.Empty;
-    public string CustomerDocument { get; set; } = string.Empty;
-    public string CustomerEmail { get; set; } = string.Empty;
-    public string CustomerPhone { get; set; } = string.Empty;
+    public string ClienteName { get; set; } = string.Empty;
+    public string ClienteDocument { get; set; } = string.Empty;
+    public string ClienteEmail { get; set; } = string.Empty;
+    public string ClientePhone { get; set; } = string.Empty;
 
     // Totales calculados
     public decimal Subtotal { get; set; }

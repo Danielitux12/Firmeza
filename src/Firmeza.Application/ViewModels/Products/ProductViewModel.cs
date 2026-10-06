@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Firmeza.Domain.Enums;
 
 namespace Firmeza.Application.ViewModels.Products;
 
@@ -39,7 +40,15 @@ public class ProductViewModel
     [Display(Name = "Categoría")]
     public string Category { get; set; } = string.Empty;
 
-    // Disponibilidad para la venta.
-    [Display(Name = "¿Está Disponible?")]
-    public bool IsAvailable { get; set; } = true;
+    [EnumDataType(typeof(ProductStatus))]
+    [Display(Name = "Estado")]
+    public ProductStatus Status { get; set; } = ProductStatus.Available;
+
+    public string StatusLabel => Status switch
+    {
+        ProductStatus.Available => "Disponible",
+        ProductStatus.Unavailable => "No disponible",
+        ProductStatus.Discontinued => "Descontinuado",
+        _ => "Desconocido"
+    };
 }
