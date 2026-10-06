@@ -1,0 +1,152 @@
+@model Firmeza.Application.Common.ImportResult
+@{
+    ViewData["Title"] = "Importación Masiva Excel";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Importación Masiva de Datos</h2>
+        <p class="text-muted mb-0">Carga unificada de clientes, productos y ventas desde archivo Excel (.xlsx)</p>
+    </div>
+    <a asp-action="DownloadSample" class="btn btn-outline-success">
+        <i class="bi bi-file-earmark-arrow-down me-1"></i> Descargar Plantilla Excel de Ejemplo
+    </a>
+</div>
+
+<!-- Formulario para cargar archivo Excel -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-lg-6">
+        <div class="card card-firmeza h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 fw-bold">
+                    <i class="bi bi-upload me-2 text-primary"></i> Subir Hoja Desnormalizada
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted small mb-3">
+                    El importador lee automáticamente los encabezados de una sola hoja que combina datos de clientes, productos y ventas, validando y normalizando las entidades en la base de datos.
+                </p>
+
+                <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Seleccionar archivo (.xlsx):</label>
+                        <input type="file" name="file" class="form-control form-control-lg" accept=".xlsx" required />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <i class="bi bi-play-circle me-1"></i> Iniciar Importación y Normalización
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="card card-firmeza h-100 bg-light">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 fw-bold">
+                    <i class="bi bi-info-circle me-2 text-info"></i> Formato y Reglas de Importación
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <ul class="list-unstyled mb-0 small text-secondary">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <strong>Cliente:</strong> Se identifica por <em>Documento</em>. Si ya existe se actualiza, si no se crea.
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <strong>Producto:</strong> Se identifica por <em>Nombre</em>. Si existe se actualiza su precio y stock.
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <strong>Venta:</strong> Se agrupa por cliente, fecha y comprobante. Descuenta stock y liquida el 19% de IVA.
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+                        <strong>Obligatorios:</strong> Cliente, Documento, Producto, Precio (>0) y Cantidad (>0).
+                    </li>
+                    <li>
+                        <i class="bi bi-file-earmark-text-fill text-primary me-2"></i>
+                        <strong>Log de Errores:</strong> Los errores por fila/columna se listan en pantalla y se archivan en un archivo <code>.txt</code>.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resumen de resultados si se procesó un lote -->
+@if (Model.TotalRowsRead > 0 || Model.HasErrors)
+{
+    <div class="card card-firmeza mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0 fw-bold">Resultados del Proceso de Importación</h5>
+            @if (!string.IsNullOrEmpty(Model.LogFilePath))
+            {
+                <a asp-action="DownloadLog" asp-route-fileName="@System.IO.Path.GetFileName(Model.LogFilePath)" class="btn btn-sm btn-outline-dark">
+                    <i class="bi bi-file-text me-1"></i> Descargar Log Detallado (.txt)
+                </a>
+            }
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3 text-center mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="p-3 border rounded bg-light">
+                        <div class="text-muted small">Total Filas Leídas</div>
+                        <div class="fs-3 fw-bold text-dark">@Model.TotalRowsRead</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 border rounded bg-success-subtle">
+                        <div class="text-success small fw-semibold">Filas Exitosas</div>
+                        <div class="fs-3 fw-bold text-success">@Model.SuccessRows</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 border rounded bg-primary-subtle">
+                        <div class="text-primary small fw-semibold">Clientes Procesados</div>
+                        <div class="fs-3 fw-bold text-primary">@Model.CustomersProcessed</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 border rounded bg-warning-subtle">
+                        <div class="text-warning small fw-semibold">Ventas Creadas</div>
+                        <div class="fs-3 fw-bold text-warning">@Model.SalesCreated</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de errores encontrados si existen -->
+            @if (Model.HasErrors)
+            {
+                <h6 class="fw-bold text-danger mb-3">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Errores Detectados (@Model.Errors.Count)
+                </h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle">
+                        <thead class="table-danger">
+                            <tr>
+                                <th style="width: 100px;">Fila Excel</th>
+                                <th style="width: 180px;">Columna</th>
+                                <th>Descripción del Problema</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var err in Model.Errors)
+                            {
+                                <tr>
+                                    <td class="fw-bold text-center">Fila @err.RowNumber</td>
+                                    <td><span class="badge bg-secondary font-monospace">@err.ColumnName</span></td>
+                                    <td class="text-danger">@err.ErrorMessage</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+}

@@ -1,0 +1,26 @@
+@{
+    ViewData["Title"] = "Acceso Denegado";
+    Layout = "_Layout";
+}
+
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-6 text-center">
+        <div class="card card-firmeza p-5 shadow-sm">
+            <div class="text-danger mb-3">
+                <i class="bi bi-shield-x display-1"></i>
+            </div>
+            <h2 class="fw-bold text-danger mb-3">Acceso Denegado</h2>
+            <p class="text-muted fs-5 mb-4">
+                No tienes los permisos necesarios para ingresar a esta sección. Este panel está restringido exclusivamente a usuarios con el rol <strong>Administrador</strong>.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-1"></i> Ir al Login
+                </a>
+                <a asp-controller="Account" asp-action="Logout" class="btn btn-danger">
+                    <i class="bi bi-box-arrow-right me-1"></i> Salir de la sesión
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

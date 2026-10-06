@@ -1,0 +1,120 @@
+@model Firmeza.Application.ViewModels.Dashboard.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Panel de Control</h2>
+        <p class="text-muted mb-0">Resumen general y estadísticas del sistema</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-controller="Sales" asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-cart-plus me-1"></i> Registrar Venta
+        </a>
+    </div>
+</div>
+
+<!-- 3 Tarjetas métricas principales requeridas -->
+<div class="row g-4 mb-4">
+    <!-- Tarjeta 1: Total de Productos -->
+    <div class="col-12 col-md-4">
+        <div class="card card-firmeza metric-card metric-products p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="text-muted text-uppercase fw-semibold small">Total de Productos</span>
+                    <div class="metric-number text-primary">@Model.TotalProducts</div>
+                    <small class="text-muted mt-2 d-block">Catálogo de ferretería</small>
+                </div>
+                <div class="bg-primary-subtle text-primary p-3 rounded-circle">
+                    <i class="bi bi-box-seam fs-3"></i>
+                </div>
+            </div>
+            <hr class="my-3 text-muted" />
+            <a asp-controller="Products" asp-action="Index" class="text-decoration-none small fw-semibold text-primary d-flex align-items-center justify-content-between">
+                <span>Gestionar productos</span>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Tarjeta 2: Total de Clientes -->
+    <div class="col-12 col-md-4">
+        <div class="card card-firmeza metric-card metric-customers p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="text-muted text-uppercase fw-semibold small">Total de Clientes</span>
+                    <div class="metric-number text-success">@Model.TotalCustomers</div>
+                    <small class="text-muted mt-2 d-block">Cartera registrada</small>
+                </div>
+                <div class="bg-success-subtle text-success p-3 rounded-circle">
+                    <i class="bi bi-people fs-3"></i>
+                </div>
+            </div>
+            <hr class="my-3 text-muted" />
+            <a asp-controller="Customers" asp-action="Index" class="text-decoration-none small fw-semibold text-success d-flex align-items-center justify-content-between">
+                <span>Gestionar clientes</span>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Tarjeta 3: Total de Ventas -->
+    <div class="col-12 col-md-4">
+        <div class="card card-firmeza metric-card metric-sales p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="text-muted text-uppercase fw-semibold small">Total de Ventas</span>
+                    <div class="metric-number text-warning">@Model.TotalSales</div>
+                    <small class="text-muted mt-2 d-block">Transacciones procesadas</small>
+                </div>
+                <div class="bg-warning-subtle text-warning p-3 rounded-circle">
+                    <i class="bi bi-receipt fs-3"></i>
+                </div>
+            </div>
+            <hr class="my-3 text-muted" />
+            <a asp-controller="Sales" asp-action="Index" class="text-decoration-none small fw-semibold text-warning d-flex align-items-center justify-content-between">
+                <span>Ver historial de ventas</span>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Accesos directos rápidos -->
+<div class="card card-firmeza">
+    <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0 fw-bold">Accesos Rápidos</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a asp-controller="Products" asp-action="Create" class="btn btn-outline-primary w-100 py-3 text-start d-flex align-items-center gap-3">
+                    <i class="bi bi-plus-circle fs-3"></i>
+                    <div>
+                        <div class="fw-bold">Nuevo Producto</div>
+                        <small class="text-muted">Añadir artículo al inventario</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a asp-controller="Customers" asp-action="Create" class="btn btn-outline-success w-100 py-3 text-start d-flex align-items-center gap-3">
+                    <i class="bi bi-person-plus fs-3"></i>
+                    <div>
+                        <div class="fw-bold">Nuevo Cliente</div>
+                        <small class="text-muted">Registrar cliente en el sistema</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a asp-controller="Sales" asp-action="Create" class="btn btn-outline-warning w-100 py-3 text-start d-flex align-items-center gap-3">
+                    <i class="bi bi-cart-check fs-3"></i>
+                    <div>
+                        <div class="fw-bold">Facturar Venta</div>
+                        <small class="text-muted">Crear comprobante con IVA 19%</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

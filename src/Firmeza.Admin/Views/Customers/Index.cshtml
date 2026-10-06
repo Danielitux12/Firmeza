@@ -1,0 +1,114 @@
+@model Firmeza.Application.ViewModels.Customers.CustomerFilterViewModel
+@{
+    ViewData["Title"] = "Gestión de Clientes";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Cartera de Clientes</h2>
+        <p class="text-muted mb-0">Directorio de clientes registrados y contactos</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="ExportExcel" class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-excel me-1"></i> Exportar Excel
+        </a>
+        <a asp-action="ExportPdf" class="btn btn-outline-danger">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Exportar PDF
+        </a>
+        <a asp-action="Create" class="btn btn-success">
+            <i class="bi bi-person-plus me-1"></i> Nuevo Cliente
+        </a>
+    </div>
+</div>
+
+<!-- Barra de búsqueda por nombre o documento -->
+<div class="card card-firmeza mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-2 align-items-center">
+            <div class="col-12 col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Buscar por nombre o número de documento..." />
+                </div>
+            </div>
+            <div class="col-12 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i> Buscar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary" title="Limpiar búsqueda">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla de clientes -->
+<div class="card card-firmeza">
+    <div class="table-responsive">
+        <table class="table table-firmeza">
+            <thead>
+                <tr>
+                    <th>Nombre Completo</th>
+                    <th>Documento</th>
+                    <th>Correo Electrónico</th>
+                    <th>Teléfono</th>
+                    <th>Edad</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Customers.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-people fs-1 d-block mb-2"></i>
+                            No se encontraron clientes registrados con los criterios ingresados.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var customer in Model.Customers)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-bold">@customer.FullName</div>
+                                <small class="text-muted">@customer.Address</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary-subtle text-secondary border font-monospace">
+                                    @customer.DocumentNumber
+                                </span>
+                            </td>
+                            <td>
+                                <a href="mailto:@customer.Email" class="text-decoration-none">
+                                    <i class="bi bi-envelope me-1"></i> @customer.Email
+                                </a>
+                            </td>
+                            <td>
+                                <span><i class="bi bi-telephone me-1 text-muted"></i>@customer.Phone</span>
+                            </td>
+                            <td>
+                                @(customer.ProcessedAge.HasValue ? $"{customer.ProcessedAge} años" : "N/D")
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@customer.Id" class="btn btn-outline-secondary" title="Detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@customer.Id" class="btn btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@customer.Id" class="btn btn-outline-danger" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

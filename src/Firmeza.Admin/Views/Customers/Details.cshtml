@@ -1,0 +1,63 @@
+@model Firmeza.Application.ViewModels.Customers.CustomerViewModel
+@{
+    ViewData["Title"] = "Detalle del Cliente";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card card-firmeza">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 fw-bold">Información del Cliente #@Model.Id</h5>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Volver al listado
+                </a>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-semibold d-block">Nombre Completo</label>
+                        <span class="fs-5 fw-bold">@Model.FullName</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-semibold d-block">Número de Documento</label>
+                        <span class="badge bg-secondary-subtle text-secondary border fs-6 font-monospace">@Model.DocumentNumber</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-semibold d-block">Correo Electrónico</label>
+                        <a href="mailto:@Model.Email" class="text-decoration-none fs-6">
+                            <i class="bi bi-envelope me-1"></i> @Model.Email
+                        </a>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-semibold d-block">Teléfono</label>
+                        <span class="fs-6"><i class="bi bi-telephone me-1 text-muted"></i>@Model.Phone</span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="text-muted small text-uppercase fw-semibold d-block">Edad Registrada</label>
+                        <span class="fs-5 fw-bold">@(Model.ProcessedAge.HasValue ? $"{Model.ProcessedAge} años" : "No calculada")</span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="text-muted small text-uppercase fw-semibold d-block">Dirección</label>
+                        <span class="fs-6">@Model.Address</span>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="bi bi-pencil me-1"></i> Editar
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                        <i class="bi bi-trash me-1"></i> Eliminar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

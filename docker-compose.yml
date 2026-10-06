@@ -1,10 +1,10 @@
 services:
-  web:
+  admin:
     build:
       context: .
       dockerfile: Dockerfile
-    image: firmeza-web
-    container_name: firmeza-web
+    image: firmeza-admin
+    container_name: firmeza-admin
     ports:
       - "8085:8080"
     environment:

@@ -92,15 +92,22 @@ firmeza-frontend/node_modules/
 firmeza-frontend/dist/
 firmeza-frontend/.angular/
 firmeza-frontend/out-tsc/
+src/Firmeza.Client/node_modules/
+src/Firmeza.Client/dist/
+src/Firmeza.Client/.angular/
+src/Firmeza.Client/out-tsc/
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .angular/
 
-## Salida del build de Angular dentro del backend
+## Salida del build de Angular dentro del backend y recibos/logs temporales
 Firmeza.Web/wwwroot/dist/
 Firmeza.Web/wwwroot/ng-dist/
+src/Firmeza.Admin/wwwroot/recibos/*.pdf
+src/Firmeza.Admin/wwwroot/logs/*.txt
+src/Firmeza.API/wwwroot/recibos/*.pdf
 
 ## ---------- Docker ----------
 docker-compose.override.yml
