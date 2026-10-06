@@ -88,6 +88,7 @@ public class ClientesController : ControllerBase
     public async Task<ActionResult<ClienteDto>> Create(SaveClienteDto request, CancellationToken cancellationToken)
     {
         var cliente = _mapper.Map<Cliente>(request);
+        Normalize(cliente);
         if (!cliente.IsValid())
         {
             return Problem(statusCode: 400, title: "Datos inválidos", detail: "El nombre, documento y correo del cliente deben ser válidos.");
@@ -122,6 +123,7 @@ public class ClientesController : ControllerBase
         }
 
         _mapper.Map(request, cliente);
+        Normalize(cliente);
         if (!cliente.IsValid())
         {
             return Problem(statusCode: 400, title: "Datos inválidos", detail: "El nombre, documento y correo del cliente deben ser válidos.");
@@ -167,8 +169,23 @@ public class ClientesController : ControllerBase
     {
         var normalizedEmail = cliente.Email.Trim().ToLower();
         var normalizedDocument = cliente.DocumentNumber.Trim().ToLower();
-        return _context.Clientes.AnyAsync(item => item.Id != excludingId
-            && (item.Email.ToLower() == normalizedEmail || item.DocumentNumber.ToLower() == normalizedDocument), cancellationToken);
+        var query = _context.Clientes.AsQueryable();
+        if (excludingId.HasValue)
+        {
+            query = query.Where(item => item.Id != excludingId.Value);
+        }
+
+        return query.AnyAsync(item => item.Email.ToLower() == normalizedEmail
+            || item.DocumentNumber.ToLower() == normalizedDocument, cancellationToken);
+    }
+
+    private static void Normalize(Cliente cliente)
+    {
+        cliente.Name = cliente.Name.Trim();
+        cliente.DocumentNumber = cliente.DocumentNumber.Trim().ToUpperInvariant();
+        cliente.Email = cliente.Email.Trim().ToLowerInvariant();
+        cliente.Phone = cliente.Phone.Trim();
+        cliente.Address = cliente.Address.Trim();
     }
 
     private ObjectResult DuplicateProblem() => Problem(

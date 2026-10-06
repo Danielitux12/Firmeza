@@ -79,6 +79,28 @@ builder.Services.AddAuthentication(options =>
     };
     options.Events = new JwtBearerEvents
     {
+        OnTokenValidated = async context =>
+        {
+            var principal = context.Principal;
+            if (principal?.IsInRole("Cliente") != true)
+            {
+                return;
+            }
+
+            if (!int.TryParse(principal.FindFirst("ClienteId")?.Value, out var clienteId))
+            {
+                context.Fail("La identidad de cliente no es válida.");
+                return;
+            }
+
+            var dbContext = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+            var isActive = await dbContext.Clientes.AsNoTracking()
+                .AnyAsync(cliente => cliente.Id == clienteId && cliente.IsActive, context.HttpContext.RequestAborted);
+            if (!isActive)
+            {
+                context.Fail("La cuenta de cliente está suspendida.");
+            }
+        },
         OnChallenge = async context =>
         {
             context.HandleResponse();

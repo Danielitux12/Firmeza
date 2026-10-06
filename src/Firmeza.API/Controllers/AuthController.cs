@@ -142,7 +142,12 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            return Unauthorized(new { message = "Credenciales incorrectas (correo o contraseña no válidos)." });
+            return Unauthorized(new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Credenciales inválidas",
+                Detail = "El correo o la contraseña no son válidos."
+            });
         }
 
         var roles = await _userManager.GetRolesAsync(user);

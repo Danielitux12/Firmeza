@@ -88,6 +88,7 @@ public class EmpresasController : ControllerBase
     public async Task<ActionResult<EmpresaDto>> Create(SaveEmpresaDto request, CancellationToken cancellationToken)
     {
         var empresa = _mapper.Map<Empresa>(request);
+        Normalize(empresa);
         if (!empresa.IsValid())
         {
             return Problem(statusCode: 400, title: "Datos inválidos", detail: "El nombre, NIT y correo de la empresa deben ser válidos.");
@@ -121,6 +122,7 @@ public class EmpresasController : ControllerBase
         }
 
         _mapper.Map(request, empresa);
+        Normalize(empresa);
         if (!empresa.IsValid())
         {
             return Problem(statusCode: 400, title: "Datos inválidos", detail: "El nombre, NIT y correo de la empresa deben ser válidos.");
@@ -166,8 +168,23 @@ public class EmpresasController : ControllerBase
     {
         var normalizedEmail = empresa.Email.Trim().ToLower();
         var normalizedNit = empresa.Nit.Trim().ToLower();
-        return _context.Empresas.AnyAsync(item => item.Id != excludingId
-            && (item.Email.ToLower() == normalizedEmail || item.Nit.ToLower() == normalizedNit), cancellationToken);
+        var query = _context.Empresas.AsQueryable();
+        if (excludingId.HasValue)
+        {
+            query = query.Where(item => item.Id != excludingId.Value);
+        }
+
+        return query.AnyAsync(item => item.Email.ToLower() == normalizedEmail
+            || item.Nit.ToLower() == normalizedNit, cancellationToken);
+    }
+
+    private static void Normalize(Empresa empresa)
+    {
+        empresa.Name = empresa.Name.Trim();
+        empresa.Nit = empresa.Nit.Trim().ToUpperInvariant();
+        empresa.Email = empresa.Email.Trim().ToLowerInvariant();
+        empresa.Phone = empresa.Phone.Trim();
+        empresa.Address = empresa.Address.Trim();
     }
 
     private ObjectResult DuplicateProblem() => Problem(
