@@ -11,6 +11,8 @@ public class ClienteViewModel
     // Identificador único del cliente (0 al crear).
     public int Id { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
     // Nombre del cliente.
     [Required(ErrorMessage = "El nombre es obligatorio.")]
     [StringLength(150, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 150 caracteres.")]
@@ -32,7 +34,7 @@ public class ClienteViewModel
 
     // Teléfono de contacto.
     [Required(ErrorMessage = "El teléfono es obligatorio.")]
-    [RegularExpression(@"^[0-9+\-\s]{7,20}$", ErrorMessage = "Ingresa un número de teléfono válido (solo dígitos y guiones).")]
+    [RegularExpression(@"^[0-9+\-\s]{7,30}$", ErrorMessage = "Ingresa un número de teléfono válido (solo dígitos y guiones).")]
     [Display(Name = "Teléfono")]
     public string Phone { get; set; } = string.Empty;
 
