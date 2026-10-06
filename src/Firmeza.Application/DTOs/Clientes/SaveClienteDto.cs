@@ -12,7 +12,7 @@ public class SaveClienteDto
     public string Name { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "El número de documento es obligatorio")]
-    [MaxLength(20)]
+    [MaxLength(50)]
     public string DocumentNumber { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "El correo electrónico es obligatorio")]
@@ -20,12 +20,12 @@ public class SaveClienteDto
     [MaxLength(150)]
     public string Email { get; set; } = string.Empty;
 
-    [MaxLength(20)]
+    [MaxLength(30)]
     public string Phone { get; set; } = string.Empty;
 
     [Range(0, 120, ErrorMessage = "La edad debe estar entre 0 y 120 años")]
     public int Age { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(250)]
     public string Address { get; set; } = string.Empty;
 }
