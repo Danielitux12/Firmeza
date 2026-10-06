@@ -17,5 +17,6 @@ public class EmpresaConfiguration : IEntityTypeConfiguration<Empresa>
         builder.Property(e => e.Address).HasMaxLength(250);
         builder.Property(e => e.IsActive).HasDefaultValue(true).IsRequired();
         builder.HasIndex(e => e.Nit).IsUnique();
+        builder.HasIndex(e => e.Email).IsUnique();
     }
 }
