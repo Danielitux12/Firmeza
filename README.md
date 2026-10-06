@@ -1,304 +1,144 @@
-# Firmeza Solution
+# Firmeza - Solución Integral de Ferretería
 
-Project based on a layered architecture with a clear separation between business, application, infrastructure, and presentation.
+Proyecto académico desarrollado en **ASP.NET Core (.NET 10)** y **Angular**, diseñado siguiendo una arquitectura limpia en capas, simple, legible y libre de sobreingeniería.
 
-## Project structure
+---
+
+## 🏛️ Estructura del Repositorio
 
 ```text
-FirmezaSolution/
+Firmeza/
 ├─ src/
-│  ├─ Firmeza.Domain/              # Domain logic and entities
-│  ├─ Firmeza.Application/         # Use cases, services, and contracts
-│  ├─ Firmeza.Infrastructure/      # EF Core, PostgreSQL, repositories
-│  └─ Firmeza.Web/                 # ASP.NET Core MVC/Web API
-├─ firmeza-frontend/            # Angular frontend
-├─ .env.example                 # Example environment variables
-├─ .env                         # Local environment variables (do not commit)
-├─ docker-compose.yml           # App and PostgreSQL orchestration
-├─ Dockerfile                   # Backend image
-├─ FirmezaSolution.sln          # Main solution
-├─ README.md                    # Project documentation
-├─ .gitignore
-├─ .dockerignore
-├─ .idea/                       # Local IDE configuration
-└─ tests/                       # Test folder (if added later)
+│  ├─ Firmeza.Domain/          # Entidades centrales y reglas puras de dominio
+│  ├─ Firmeza.Application/     # DTOs, ViewModels, interfaces y perfiles AutoMapper
+│  ├─ Firmeza.Infrastructure/  # AppDbContext (Identity + Npgsql), servicios (Excel, PDF, SMTP)
+│  ├─ Firmeza.Admin/           # Panel web MVC (Razor Views + Bootstrap 5) para Administradores
+│  ├─ Firmeza.API/             # Web API REST (JWT, Swagger interactivo, AutoMapper) para Clientes
+│  └─ Firmeza.Client/          # SPA en Angular (interfaz para clientes de la tienda)
+├─ tests/
+│  └─ Firmeza.Tests/           # Pruebas unitarias xUnit (dominio, validaciones, mapeos)
+├─ samples/
+│  └─ ejemplo_importacion.xlsx # Plantilla Excel de ejemplo para importación masiva
+├─ .env.example                # Plantilla de variables de entorno (Base de datos, JWT, SMTP)
+├─ .env                        # Variables locales (ignorado por Git)
+├─ FirmezaSolution.sln         # Solución principal en .NET 10
+└─ README.md                   # Documentación técnica del proyecto
 ```
 
 ---
 
-## Layered architecture
+## 📦 Capas y Responsabilidades
 
-The solution is organized with the base structure requested by the team:
+### 1. `Firmeza.Domain`
+- **Responsabilidad:** Contiene las entidades esenciales del negocio sin dependencias externas ni frameworks de persistencia.
+- **Entidades:**
+  - `Product`: Id, Name, Description, Price, Stock, Category, IsAvailable.
+  - `Customer`: Id, FullName, DocumentNumber, Email, Phone, BirthDate, Address, UserId.
+  - `Sale`: Id, SaleNumber, Date, CustomerId, Subtotal, Tax (IVA 19%), Total, ReceiptPath.
+  - `SaleDetail`: Id, SaleId, ProductId, Quantity, UnitPrice, LineTotal.
 
-- Domain: business entities and rules
-- Application: use cases and contracts
-- Infrastructure: data access and technical details
-- Web: controllers and HTTP exposure
+### 2. `Firmeza.Application`
+- **Responsabilidad:** Define contratos (`interfaces`), modelos de transferencia (`DTOs`), modelos de vista (`ViewModels`) y transformaciones con `AutoMapper`.
+- **Contratos principales:**
+  - `IExcelImporter`: Normalización y carga masiva de catálogos desnormalizados.
+  - `IExcelExporter`: Exportación estructurada a formato `.xlsx` con EPPlus.
+  - `IPdfExporter`: Exportación de reportes tabulares a PDF con QuestPDF.
+  - `IReceiptGenerator`: Generación de comprobantes comerciales físicos y en memoria.
+  - `IEmailSender`: Envío desacoplado de correos electrónicos con soporte para adjuntos.
 
-Dependency direction is as follows:
+### 3. `Firmeza.Infrastructure`
+- **Responsabilidad:** Implementación técnica concreta y persistencia de datos.
+- **Componentes:**
+  - `AppDbContext`: Hereda de `IdentityDbContext<IdentityUser>` para soporte de autenticación y roles con PostgreSQL (`Npgsql.EntityFrameworkCore.PostgreSQL`).
+  - `DatabaseSeeder`: Siembra inicial automática de roles (`Administrador`, `Cliente`) y usuario admin.
+  - Implementaciones concretas: `ExcelImporter`, `ExcelExporter`, `PdfExporter`, `ReceiptGenerator`, `SmtpEmailSender`.
 
-- Domain depends on no one
-- Application depends on Domain
-- Infrastructure depends on Application and Domain
-- Web depends on Application and infrastructure only through interfaces and configuration
+### 4. `Firmeza.Admin` (Panel de Administración)
+- **Tipo:** Aplicación ASP.NET Core MVC con Razor Views y Bootstrap 5.
+- **Seguridad:** Autenticación por Cookies (`[Authorize(Roles = "Administrador")]`).
+- **Módulos:**
+  - **Dashboard:** Métricas y tarjetas de resumen en tiempo real.
+  - **Productos:** CRUD, búsqueda, filtros de categoría y disponibilidad, exportación Excel y PDF.
+  - **Clientes:** CRUD con validaciones de unicidad, conversión de edad y exportación.
+  - **Ventas:** Registro interactivo con cálculo automático de IVA (19%), descuento de stock en almacén y descarga de recibo.
+  - **Importación Masiva:** Carga de Excel desnormalizado con reporte de errores en pantalla y logs `.txt`.
 
-This keeps the solution decoupled and easier to maintain, while still being a well-structured monolith.
+### 5. `Firmeza.API` (API REST)
+- **Tipo:** ASP.NET Core Web API.
+- **Seguridad:** JWT Bearer Token y políticas de autorización (`SoloAdministrador`, `SoloCliente`).
+- **Documentación interactiva:** Swagger UI habilitado con soporte para autorización Bearer (`Authorize`).
+- **Endpoints clave:**
+  - `POST /api/auth/register`: Registro de clientes, creación de usuario Identity y envío de correo de bienvenida.
+  - `POST /api/auth/login`: Retorna token JWT con reclamos de rol y `CustomerId`.
+  - `GET /api/products`: Catálogo de productos.
+  - `POST /api/sales`: Registro de ventas para clientes con descuento de inventario, emisión de recibo PDF y envío de comprobante al correo vía SMTP.
+  - `GET /api/sales/{id}/receipt`: Descarga protegida del comprobante en PDF.
 
----
-
-## 1. Firmeza.Domain
-
-### Path
-`Firmeza.Domain`
-
-### Responsibility
-Contains the business entities, domain rules, and validations for the core business logic.
-
-### Includes
-- entities
-- business validations
-- state rules
-- core logic without depending on databases or APIs
-
-### Example
-- `Employee`
-- `Product`
-- validations such as `IsValid()`, `Activate()`, `Deactivate()`
-
-### Key rule
-It must not depend on:
-- ASP.NET Core
-- Entity Framework
-- Angular
-- PostgreSQL
-
----
-
-## 2. Firmeza.Application
-
-### Path
-`Firmeza.Application`
-
-### Responsibility
-Coordinates the business use cases and defines the application logic.
-
-### Includes
-- services
-- repository interfaces
-- DTOs
-- use cases
-- application flow validation
-
-### Example
-- create employee
-- list products
-- validate data before persistence
-
-### Dependencies
-- depends on Domain
-- should not depend directly on the Web layer
+### 6. `Firmeza.Tests`
+- Pruebas unitarias automáticas con **xUnit** para verificar:
+  - Validaciones de dominio (`Product`, `Customer`).
+  - Cálculo de subtotales, IVA 19% y totales de ventas (`Sale`, `SaleDetail`).
+  - Mapeos de entrada y salida con `AutoMapper`.
 
 ---
 
-## 3. Firmeza.Infrastructure
+## ⚙️ Configuración y Variables de Entorno
 
-### Path
-`Firmeza.Infrastructure`
+El proyecto lee la configuración directamente desde un archivo `.env` en la raíz o desde variables del sistema operativo:
 
-### Responsibility
-Implements technical details such as database access, persistence, configuration, and external services.
-
-### Includes
-- `AppDbContext`
-- entity configurations
-- concrete repositories
-- migrations
-- dependency injection
-
-### Example
-- save employees in PostgreSQL
-- implement repository interfaces
-- map entities to database tables
-
-### Dependencies
-- depends on Domain and Application
-
----
-
-## 4. Firmeza.Web
-
-### Path
-`Firmeza.Web`
-
-### Responsibility
-This is the entry and presentation layer of the system. It exposes the application through HTTP endpoints and renders the MVC UI.
-
-### Includes
-- controllers
-- models
-- views
-- HTTP pipeline configuration
-- app startup
-
-### Example
-- `HomeController`
-- `LoginController`
-- REST or MVC endpoints for screens
-
-### Dependencies
-- depends on Application and configured infrastructure
-
----
-
-## 5. Angular frontend
-
-### Path
-`firmeza-frontend/`
-
-### Responsibility
-This is the user presentation layer. It consumes the backend API and displays the information.
-
-### Includes
-- components
-- HTTP services
-- routes
-- styles
-- templates
-
-### Example
-- login
-- employee list
-- product management
-
----
-
-## Environment variables
-
-The project uses environment variables for the PostgreSQL connection.
-
-### Example file
-`.env.example`
-
+### Ejemplo de `.env`:
 ```env
+# Conexión PostgreSQL
 ConnectionStrings__DefaultConnection=Host=localhost;Port=5432;Database=firmeza;Username=firmeza;Password=coder1234
-```
 
-### Real local file
-Create a `.env` file in the root with your real values.
+# Credenciales del Administrador inicial (DatabaseSeeder)
+ADMIN_EMAIL=admin@firmeza.com
+ADMIN_PASSWORD=Admin123*
 
----
+# Autenticación JWT para Firmeza.API
+JWT_KEY=ClaveSuperSecretaFirmeza2026ParaTokenJWTConLongitudSegura123!
+JWT_ISSUER=FirmezaAPI
+JWT_AUDIENCE=FirmezaClient
 
-## Requirements
-
-Before running the project, make sure you have installed:
-
-- .NET SDK 10
-- Node.js and npm
-- Angular CLI
-- PostgreSQL or Docker
-
----
-
-## Run the backend locally
-
-From the project root:
-
-```bash
-dotnet restore
-dotnet run --project src/Firmeza.Web
-```
-
-The application is usually available at:
-
-```text
-http://localhost:5287
-```
-
-If you need to force a specific port:
-
-```bash
-dotnet run --project src/Firmeza.Web --urls http://localhost:5290
+# Configuración SMTP (Gmail u otro servidor)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=tu_correo@gmail.com
+SMTP_PASSWORD=tu_app_password
+SMTP_FROM_EMAIL=tu_correo@gmail.com
+SMTP_FROM_NAME=Firmeza Tienda
 ```
 
 ---
 
-## Run the Angular frontend
+## 🚀 Cómo Ejecutar el Proyecto
 
-From the project root:
-
-```bash
-cd firmeza-frontend
-npm install
-npm start
-```
-
-Or directly:
-
-```bash
-cd firmeza-frontend
-npx ng serve
-```
-
-The frontend normally runs at:
-
-```text
-http://localhost:4200
-```
-
----
-
-## Run with Docker
-
-From the project root:
-
-```bash
-docker compose up --build
-```
-
-This starts:
-- the web application
-- PostgreSQL
-
-The app is exposed at:
-
-```text
-http://localhost:8085
-```
-
-The database is available at:
-
-```text
-localhost:5432
-```
-
----
-
-## Build the complete solution
-
-```bash
+### 1. Compilar toda la solución
+```powershell
 dotnet build FirmezaSolution.sln
 ```
 
+### 2. Ejecutar las pruebas unitarias
+```powershell
+dotnet test tests/Firmeza.Tests/Firmeza.Tests.csproj
+```
+
+### 3. Ejecutar el Panel Web de Administración (Admin MVC)
+```powershell
+dotnet run --project src/Firmeza.Admin/Firmeza.Admin.csproj
+```
+- Acceso: `http://localhost:<puerto>/Account/Login`
+- Usuario por defecto: `admin@firmeza.com` / `Admin123*`
+
+### 4. Ejecutar la API REST (para Clientes y Swagger)
+```powershell
+dotnet run --project src/Firmeza.API/Firmeza.API.csproj
+```
+- Swagger UI interactivo: `http://localhost:<puerto>/swagger`
+- Haz clic en **Authorize** para ingresar el token JWT obtenido en `/api/auth/login`.
+
 ---
 
-## Suggested conventions
-
-- Domain must not depend on Web or Infrastructure
-- Application coordinates use cases and defines contracts
-- Infrastructure implements those contracts with EF Core and PostgreSQL
-- Web only exposes functionality to the client
-- The frontend consumes the API and should not contain critical business logic
-
----
-
-## Current state
-
-The solution is organized in four main layers and is ready to continue with:
-
-- domain entities
-- application services
-- infrastructure and persistence
-- controllers and endpoints
-- connection with Angular and Docker
-
-If you want, I can also create a more technical README by layer with concrete examples for entities, services, repositories, and endpoints.
+## 📄 Licencias de Terceros
+- **EPPlus:** Configurado bajo contexto de licencia no comercial (`LicenseContext.NonCommercial`).
+- **QuestPDF:** Configurado bajo licencia comunitaria (`LicenseType.Community`).
