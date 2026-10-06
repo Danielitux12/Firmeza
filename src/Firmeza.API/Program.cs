@@ -4,6 +4,7 @@ using Firmeza.Application.Mappings;
 using Firmeza.Infrastructure;
 using Firmeza.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -20,10 +21,26 @@ builder.Services.AddControllers();
 var mapperConfig = new AutoMapper.MapperConfiguration(cfg =>
 {
     cfg.AddProfile<ProductMappingProfile>();
-    cfg.AddProfile<CustomerMappingProfile>();
+    cfg.AddProfile<ClienteMappingProfile>();
+    cfg.AddProfile<EmpresaMappingProfile>();
+    cfg.AddProfile<TrabajadorMappingProfile>();
     cfg.AddProfile<SaleMappingProfile>();
 });
 builder.Services.AddSingleton(mapperConfig.CreateMapper());
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var problem = new ValidationProblemDetails(context.ModelState)
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = "Los datos enviados no son válidos.",
+            Detail = "Corrige los campos indicados y vuelve a intentarlo."
+        };
+        return new BadRequestObjectResult(problem);
+    };
+});
 
 // Configura la infraestructura y base de datos con la misma cadena de conexión
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -59,6 +76,32 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtAudience,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = async context =>
+        {
+            context.HandleResponse();
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.ContentType = "application/problem+json";
+            await context.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "No autenticado",
+                Detail = "Se requiere un token de acceso válido."
+            });
+        },
+        OnForbidden = async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            context.Response.ContentType = "application/problem+json";
+            await context.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Status = StatusCodes.Status403Forbidden,
+                Title = "Acceso denegado",
+                Detail = "No tienes permisos para realizar esta operación."
+            });
+        }
     };
 });
 

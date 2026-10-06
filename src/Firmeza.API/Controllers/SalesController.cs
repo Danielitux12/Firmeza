@@ -51,19 +51,19 @@ public class SalesController : ControllerBase
     {
         var isAdmin = User.IsInRole("Administrador");
         var query = _context.Sales
-            .Include(s => s.Customer)
+            .Include(s => s.Cliente)
             .Include(s => s.SaleDetails)
                 .ThenInclude(d => d.Product)
             .AsNoTracking();
 
         if (!isAdmin)
         {
-            var customerId = await GetCurrentCustomerIdAsync();
-            if (customerId == null)
+            var clienteId = await GetCurrentClienteIdAsync();
+            if (clienteId == null)
             {
                 return Forbid();
             }
-            query = query.Where(s => s.CustomerId == customerId.Value);
+            query = query.Where(s => s.ClienteId == clienteId.Value);
         }
 
         var sales = await query.OrderByDescending(s => s.Date).ToListAsync();
@@ -77,7 +77,7 @@ public class SalesController : ControllerBase
     public async Task<ActionResult<SaleDto>> GetById(int id)
     {
         var sale = await _context.Sales
-            .Include(s => s.Customer)
+            .Include(s => s.Cliente)
             .Include(s => s.SaleDetails)
                 .ThenInclude(d => d.Product)
             .FirstOrDefaultAsync(s => s.Id == id);
@@ -90,8 +90,8 @@ public class SalesController : ControllerBase
         var isAdmin = User.IsInRole("Administrador");
         if (!isAdmin)
         {
-            var customerId = await GetCurrentCustomerIdAsync();
-            if (customerId == null || sale.CustomerId != customerId.Value)
+            var clienteId = await GetCurrentClienteIdAsync();
+            if (clienteId == null || sale.ClienteId != clienteId.Value)
             {
                 return Forbid();
             }
@@ -112,32 +112,32 @@ public class SalesController : ControllerBase
             return BadRequest(new { message = "La venta debe contener al menos un producto." });
         }
 
-        int customerId;
+        int clienteId;
         var isAdmin = User.IsInRole("Administrador");
 
         if (isAdmin)
         {
-            if (!request.CustomerId.HasValue)
+            if (!request.ClienteId.HasValue)
             {
-                return BadRequest(new { message = "El administrador debe especificar el CustomerId." });
+                return BadRequest(new { message = "El administrador debe especificar el ClienteId." });
             }
-            customerId = request.CustomerId.Value;
+            clienteId = request.ClienteId.Value;
         }
         else
         {
             // El cliente solo puede registrar para sí mismo
-            var currentCustomerId = await GetCurrentCustomerIdAsync();
-            if (currentCustomerId == null)
+            var currentClienteId = await GetCurrentClienteIdAsync();
+            if (currentClienteId == null)
             {
                 return BadRequest(new { message = "No se encontró el perfil de cliente asociado a tu usuario." });
             }
-            customerId = currentCustomerId.Value;
+            clienteId = currentClienteId.Value;
         }
 
-        var customer = await _context.Customers.FindAsync(customerId);
-        if (customer == null)
+        var cliente = await _context.Clientes.FindAsync(clienteId);
+        if (cliente == null)
         {
-            return NotFound(new { message = $"Cliente con id {customerId} no existe." });
+            return NotFound(new { message = $"Cliente con id {clienteId} no existe." });
         }
 
         // Crear la venta
@@ -145,8 +145,8 @@ public class SalesController : ControllerBase
         {
             SaleNumber = $"VTA-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(100, 999)}",
             Date = DateTime.UtcNow,
-            CustomerId = customerId,
-            Customer = customer
+            ClienteId = clienteId,
+            Cliente = cliente
         };
 
         decimal subtotal = 0;
@@ -216,11 +216,11 @@ public class SalesController : ControllerBase
         }
 
         // Enviar correo con recibo PDF adjunto
-        if (pdfBytes != null && !string.IsNullOrWhiteSpace(customer.Email))
+        if (pdfBytes != null && !string.IsNullOrWhiteSpace(cliente.Email))
         {
-            var emailTo = customer.Email;
+            var emailTo = cliente.Email;
             var saleNum = sale.SaleNumber;
-            var custName = customer.FullName;
+            var custName = cliente.Name;
             var saleTotal = sale.Total;
 
             _ = Task.Run(async () =>
@@ -257,7 +257,7 @@ public class SalesController : ControllerBase
     public async Task<IActionResult> DownloadReceipt(int id)
     {
         var sale = await _context.Sales
-            .Include(s => s.Customer)
+            .Include(s => s.Cliente)
             .Include(s => s.SaleDetails)
                 .ThenInclude(d => d.Product)
             .FirstOrDefaultAsync(s => s.Id == id);
@@ -270,8 +270,8 @@ public class SalesController : ControllerBase
         var isAdmin = User.IsInRole("Administrador");
         if (!isAdmin)
         {
-            var customerId = await GetCurrentCustomerIdAsync();
-            if (customerId == null || sale.CustomerId != customerId.Value)
+            var clienteId = await GetCurrentClienteIdAsync();
+            if (clienteId == null || sale.ClienteId != clienteId.Value)
             {
                 return Forbid();
             }
@@ -296,17 +296,17 @@ public class SalesController : ControllerBase
     }
 
     /// <summary>
-    /// Obtiene el Id del Customer correspondiente al usuario actualmente autenticado.
+    /// Obtiene el Id del Cliente correspondiente al usuario actualmente autenticado.
     /// </summary>
-    private async Task<int?> GetCurrentCustomerIdAsync()
+    private async Task<int?> GetCurrentClienteIdAsync()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var email = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name;
 
-        var customer = await _context.Customers.FirstOrDefaultAsync(c =>
+        var cliente = await _context.Clientes.FirstOrDefaultAsync(c =>
             (userId != null && c.UserId == userId) ||
             (email != null && c.Email == email));
 
-        return customer?.Id;
+        return cliente?.Id;
     }
 }

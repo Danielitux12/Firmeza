@@ -1,0 +1,188 @@
+using AutoMapper;
+using Firmeza.API.Problems;
+using Firmeza.Application.Common;
+using Firmeza.Application.DTOs.Empresas;
+using Firmeza.Domain.Entities;
+using Firmeza.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace Firmeza.API.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize(Policy = "SoloAdministrador")]
+public class EmpresasController : ControllerBase
+{
+    private readonly AppDbContext _context;
+    private readonly IMapper _mapper;
+
+    public EmpresasController(AppDbContext context, IMapper mapper)
+    {
+        _context = context;
+        _mapper = mapper;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<PagedResult<EmpresaDto>>> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null,
+        [FromQuery] string status = "active",
+        CancellationToken cancellationToken = default)
+    {
+        if (page < 1 || pageSize < 1)
+        {
+            return Problem(statusCode: 400, title: "Solicitud inválida", detail: "La página y el tamaño de página deben ser mayores que cero.");
+        }
+
+        pageSize = Math.Min(pageSize, 100);
+        if (!TryGetActiveFilter(status, out var isActive))
+        {
+            return Problem(statusCode: 400, title: "Estado inválido", detail: "El estado debe ser active, inactive o all.");
+        }
+
+        var query = _context.Empresas.AsNoTracking();
+        if (isActive.HasValue)
+        {
+            query = query.Where(empresa => empresa.IsActive == isActive.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(empresa =>
+                empresa.Name.ToLower().Contains(term)
+                || empresa.Email.ToLower().Contains(term)
+                || empresa.Nit.ToLower().Contains(term));
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .OrderBy(empresa => empresa.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return Ok(new PagedResult<EmpresaDto>
+        {
+            Items = _mapper.Map<List<EmpresaDto>>(items),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        });
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<EmpresaDto>> GetById(int id, CancellationToken cancellationToken)
+    {
+        var empresa = await _context.Empresas.AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+        return empresa is null
+            ? Problem(statusCode: 404, title: "Empresa no encontrada", detail: $"No existe una empresa con Id {id}.")
+            : Ok(_mapper.Map<EmpresaDto>(empresa));
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<EmpresaDto>> Create(SaveEmpresaDto request, CancellationToken cancellationToken)
+    {
+        var empresa = _mapper.Map<Empresa>(request);
+        if (!empresa.IsValid())
+        {
+            return Problem(statusCode: 400, title: "Datos inválidos", detail: "El nombre, NIT y correo de la empresa deben ser válidos.");
+        }
+
+        if (await HasDuplicateAsync(empresa, null, cancellationToken))
+        {
+            return DuplicateProblem();
+        }
+
+        _context.Empresas.Add(empresa);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException exception) when (UniqueConstraintHelper.IsUniqueViolation(exception))
+        {
+            return DuplicateProblem();
+        }
+
+        return CreatedAtAction(nameof(GetById), new { id = empresa.Id }, _mapper.Map<EmpresaDto>(empresa));
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<EmpresaDto>> Update(int id, SaveEmpresaDto request, CancellationToken cancellationToken)
+    {
+        var empresa = await _context.Empresas.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+        if (empresa is null)
+        {
+            return Problem(statusCode: 404, title: "Empresa no encontrada", detail: $"No existe una empresa con Id {id}.");
+        }
+
+        _mapper.Map(request, empresa);
+        if (!empresa.IsValid())
+        {
+            return Problem(statusCode: 400, title: "Datos inválidos", detail: "El nombre, NIT y correo de la empresa deben ser válidos.");
+        }
+
+        if (await HasDuplicateAsync(empresa, id, cancellationToken))
+        {
+            return DuplicateProblem();
+        }
+
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException exception) when (UniqueConstraintHelper.IsUniqueViolation(exception))
+        {
+            return DuplicateProblem();
+        }
+
+        return Ok(_mapper.Map<EmpresaDto>(empresa));
+    }
+
+    [HttpPatch("{id:int}/suspend")]
+    public Task<IActionResult> Suspend(int id, CancellationToken cancellationToken) => SetActiveAsync(id, false, cancellationToken);
+
+    [HttpPatch("{id:int}/activate")]
+    public Task<IActionResult> Activate(int id, CancellationToken cancellationToken) => SetActiveAsync(id, true, cancellationToken);
+
+    private async Task<IActionResult> SetActiveAsync(int id, bool active, CancellationToken cancellationToken)
+    {
+        var empresa = await _context.Empresas.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+        if (empresa is null)
+        {
+            return Problem(statusCode: 404, title: "Empresa no encontrada", detail: $"No existe una empresa con Id {id}.");
+        }
+
+        if (active) empresa.Activate(); else empresa.Deactivate();
+        await _context.SaveChangesAsync(cancellationToken);
+        return Ok(_mapper.Map<EmpresaDto>(empresa));
+    }
+
+    private Task<bool> HasDuplicateAsync(Empresa empresa, int? excludingId, CancellationToken cancellationToken)
+    {
+        var normalizedEmail = empresa.Email.Trim().ToLower();
+        var normalizedNit = empresa.Nit.Trim().ToLower();
+        return _context.Empresas.AnyAsync(item => item.Id != excludingId
+            && (item.Email.ToLower() == normalizedEmail || item.Nit.ToLower() == normalizedNit), cancellationToken);
+    }
+
+    private ObjectResult DuplicateProblem() => Problem(
+        statusCode: 409,
+        title: "Conflicto de datos",
+        detail: "El correo electrónico o el NIT ya pertenece a otra empresa.");
+
+    private static bool TryGetActiveFilter(string status, out bool? isActive)
+    {
+        switch (status.Trim().ToLowerInvariant())
+        {
+            case "active": isActive = true; return true;
+            case "inactive": isActive = false; return true;
+            case "all": isActive = null; return true;
+            default: isActive = null; return false;
+        }
+    }
+}
