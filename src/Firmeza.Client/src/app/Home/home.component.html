@@ -191,7 +191,13 @@
 <div class="home-page">
   <nav class="navbar">
     <div class="brand">Firmeza</div>
-    <a href="/Login" class="btn-nav-login">Iniciar sesión</a>
+    <div *ngIf="currentUser; else notLoggedIn" style="display: flex; align-items: center; gap: 1rem;">
+      <span style="font-size: 0.9rem; color: var(--slate);">{{ currentUser.email }} ({{ currentUser.role }})</span>
+      <button (click)="logout()" class="btn-nav-login" style="background: var(--danger); border-color: var(--danger); cursor: pointer;">Cerrar sesión</button>
+    </div>
+    <ng-template #notLoggedIn>
+      <a routerLink="/Login" class="btn-nav-login">Iniciar sesión</a>
+    </ng-template>
   </nav>
 
   <section class="hero">
@@ -199,7 +205,7 @@
       <h1>Bienvenido a Firmeza</h1>
       <p>{{ subtitle() }}</p>
       <div class="hero-actions">
-        <a href="/Login" class="btn-primary">Comenzar</a>
+        <a *ngIf="!currentUser" routerLink="/Login" class="btn-primary">Comenzar</a>
         <a href="#features" class="btn-secondary">Conocer más</a>
       </div>
     </div>

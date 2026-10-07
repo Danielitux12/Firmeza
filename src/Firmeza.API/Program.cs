@@ -17,6 +17,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Agrega servicios de controladores para los endpoints de la API.
 builder.Services.AddControllers();
 
+// Configura CORS para permitir solicitudes del cliente Angular
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularClient", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 // Agrega AutoMapper con los perfiles de Firmeza.Application
 var mapperConfig = new AutoMapper.MapperConfiguration(cfg =>
 {
@@ -202,6 +214,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// Habilita CORS
+app.UseCors("AllowAngularClient");
 
 // Habilita autenticación y autorización en orden
 app.UseAuthentication();

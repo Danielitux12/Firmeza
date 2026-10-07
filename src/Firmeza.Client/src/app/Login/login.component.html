@@ -216,6 +216,26 @@
     margin: 0;
   }
 
+  .alert-error {
+    background-color: #fde8e8;
+    color: #9b1c1c;
+    border: 1px solid #f8b4b4;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .alert-success {
+    background-color: #def7ec;
+    color: #03543f;
+    border: 1px solid #bcf0da;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    margin-bottom: 1.25rem;
+  }
+
   /* Móvil: se oculta el panel de marca y el nombre pasa al encabezado */
   @media (max-width: 800px) {
     .login-page {
@@ -258,15 +278,38 @@
         <p>Ingresa tus credenciales para acceder a tu cuenta.</p>
       </div>
 
-      <form class="login-form">
+      <div *ngIf="errorMessage" class="alert-error">
+        {{ errorMessage }}
+      </div>
+      <div *ngIf="successMessage" class="alert-success">
+        {{ successMessage }}
+      </div>
+
+      <form class="login-form" (ngSubmit)="onSubmit()">
         <div class="form-group">
-          <label for="usuario">Usuario</label>
-          <input type="text" id="usuario" name="usuario" placeholder="Nombre de usuario" autocomplete="username" />
+          <label for="usuario">Correo electrónico</label>
+          <input
+            type="email"
+            id="usuario"
+            name="usuario"
+            placeholder="correo@ejemplo.com"
+            autocomplete="email"
+            [(ngModel)]="email"
+            required
+          />
         </div>
 
         <div class="form-group">
           <label for="password">Contraseña</label>
-          <input type="password" id="password" name="password" placeholder="Contraseña" autocomplete="current-password" />
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Contraseña"
+            autocomplete="current-password"
+            [(ngModel)]="password"
+            required
+          />
         </div>
 
         <div class="form-options">
@@ -274,10 +317,12 @@
             <input type="checkbox" />
             <span>Mantener sesión iniciada</span>
           </label>
-          <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+          <a routerLink="/" class="forgot-link">Volver al inicio</a>
         </div>
 
-        <button type="submit" class="btn-login">Iniciar sesión</button>
+        <button type="submit" class="btn-login" [disabled]="isLoading">
+          {{ isLoading ? 'Iniciando sesión...' : 'Iniciar sesión' }}
+        </button>
       </form>
 
       <div class="login-footer">
