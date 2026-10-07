@@ -11,20 +11,18 @@ namespace Firmeza.Infrastructure;
 
 public static class DependencyInjection
 {
-    // Registra la infraestructura de acceso a datos y servicios concretos.
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services, string connectionString)
     {
-        // Configura el contexto de base de datos con PostgreSQL.
+        // 1. Contexto con PostgreSQL
         services.AddDbContext<AppDbContext>(options =>
         {
             options.UseNpgsql(connectionString);
         });
 
-        // Configura Identity con soporte para roles y EF Core.
+        // 2. ASP.NET Core Identity
         services.AddIdentityCore<IdentityUser>(options =>
         {
-            // Opciones de contraseña simples para ambiente académico.
             options.Password.RequireDigit = false;
             options.Password.RequireLowercase = false;
             options.Password.RequireNonAlphanumeric = false;
@@ -35,20 +33,16 @@ public static class DependencyInjection
         .AddRoles<IdentityRole>()
         .AddEntityFrameworkStores<AppDbContext>();
 
-        // Registra repositorios e implementaciones de aplicación.
-        services.AddScoped<IProductRepository, ProductRepository>();
-        services.AddScoped<IProductService, ProductService>();
-        services.AddScoped<ProductService>();
-        services.AddScoped<IEmpresaRepository, EmpresaRepository>();
+        // 3. Repositorio Genérico para entidades de dominio (Cliente, Empresa)
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+        // 4. Servicios de Aplicación (CRUDs compartidos)
+        services.AddScoped<IClienteService, ClienteService>();
         services.AddScoped<IEmpresaService, EmpresaService>();
 
-        // Registra servicios de Excel (EPPlus) y PDF (QuestPDF).
-        services.AddScoped<IExcelImporter, ExcelImporter>();
+        // 5. Utilidades y exportaciones
         services.AddScoped<IExcelExporter, ExcelExporter>();
         services.AddScoped<IPdfExporter, PdfExporter>();
-        services.AddScoped<IReceiptGenerator, ReceiptGenerator>();
-
-        // Registra el servicio de correo SMTP
         services.AddScoped<IEmailSender, SmtpEmailSender>();
 
         return services;

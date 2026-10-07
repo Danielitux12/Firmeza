@@ -79,7 +79,6 @@ public class EmpresasController : Controller
         if (!ModelState.IsValid) return View(model);
         await ValidateDuplicatesAsync(model, null);
         var empresa = ToEntity(model);
-        if (!empresa.IsValid()) ModelState.AddModelError(string.Empty, "Los datos de la empresa no son válidos.");
         if (!ModelState.IsValid) return View(model);
 
         _context.Empresas.Add(empresa);
@@ -98,7 +97,7 @@ public class EmpresasController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Edit(int id)
+    public async Task<IActionResult> Edit(Guid id)
     {
         var empresa = await _context.Empresas.AsNoTracking().FirstOrDefaultAsync(item => item.Id == id);
         return empresa is null ? NotFound() : View(ToViewModel(empresa));
@@ -106,7 +105,7 @@ public class EmpresasController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, EmpresaViewModel model)
+    public async Task<IActionResult> Edit(Guid id, EmpresaViewModel model)
     {
         if (id != model.Id) return BadRequest();
         if (!ModelState.IsValid) return View(model);
@@ -116,7 +115,6 @@ public class EmpresasController : Controller
 
         await ValidateDuplicatesAsync(model, id);
         var candidate = ToEntity(model);
-        if (!candidate.IsValid()) ModelState.AddModelError(string.Empty, "Los datos de la empresa no son válidos.");
         if (!ModelState.IsValid) return View(model);
 
         empresa.Name = candidate.Name;
@@ -141,13 +139,13 @@ public class EmpresasController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public Task<IActionResult> Suspend(int id) => SetActiveAsync(id, false);
+    public Task<IActionResult> Suspend(Guid id) => SetActiveAsync(id, false);
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public Task<IActionResult> Activate(int id) => SetActiveAsync(id, true);
+    public Task<IActionResult> Activate(Guid id) => SetActiveAsync(id, true);
 
-    private async Task<IActionResult> SetActiveAsync(int id, bool active)
+    private async Task<IActionResult> SetActiveAsync(Guid id, bool active)
     {
         var empresa = await _context.Empresas.FirstOrDefaultAsync(item => item.Id == id);
         if (empresa is null) return NotFound();
@@ -158,7 +156,7 @@ public class EmpresasController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task ValidateDuplicatesAsync(EmpresaViewModel model, int? excludingId)
+    private async Task ValidateDuplicatesAsync(EmpresaViewModel model, Guid? excludingId)
     {
         var email = model.Email.Trim().ToLower();
         var nit = model.Nit.Trim().ToLower();

@@ -11,6 +11,8 @@ public class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
     {
         builder.ToTable("clientes");
 
+        builder.HasKey(c => c.Id);
+
         builder.Property(c => c.Name).IsRequired().HasMaxLength(150);
         builder.Property(c => c.DocumentNumber).IsRequired().HasMaxLength(50);
         builder.Property(c => c.Email).IsRequired().HasMaxLength(150);
@@ -22,11 +24,5 @@ public class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
         // DocumentNumber y Email deben ser únicos según requerimiento.
         builder.HasIndex(c => c.DocumentNumber).IsUnique();
         builder.HasIndex(c => c.Email).IsUnique();
-
-        // Relación 1-N: Un cliente puede tener múltiples ventas.
-        builder.HasMany(c => c.Sales)
-            .WithOne(s => s.Cliente)
-            .HasForeignKey(s => s.ClienteId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

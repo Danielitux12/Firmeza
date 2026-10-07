@@ -1,26 +1,33 @@
-using Firmeza.Domain.Entities;
+using Firmeza.Application.DTOs.Clientes;
+using Firmeza.Application.Validators;
+using Xunit;
 
 namespace Firmeza.Tests;
 
 public class ClienteTests
 {
-    // Verifica que un cliente con datos válidos pase la validación IsValid.
+    private readonly ClienteValidator _validator = new();
+
+    // Verifica que un cliente con datos válidos pase la validación.
     [Fact]
     public void Cliente_WithValidData_ReturnsTrue()
     {
         // Organizar (Arrange)
-        var cliente = new Cliente
+        var dto = new SaveClienteDto
         {
-            Id = 1,
             Name = "Juan Perez",
             DocumentNumber = "12345678",
             Email = "juan.perez@example.com",
             Phone = "987654321",
-            Address = "Av. Principal 123"
+            Address = "Av. Principal 123",
+            Age = 30
         };
 
-        // Actuar (Act) & Afirmar (Assert)
-        Assert.True(cliente.IsValid());
+        // Actuar (Act)
+        var result = _validator.Validate(dto);
+
+        // Afirmar (Assert)
+        Assert.True(result.IsValid);
     }
 
     // Verifica que un cliente sin documento o correo no sea válido.
@@ -28,16 +35,19 @@ public class ClienteTests
     public void Cliente_MissingRequiredData_ReturnsFalse()
     {
         // Organizar (Arrange)
-        var cliente = new Cliente
+        var dto = new SaveClienteDto
         {
-            Id = 2,
             Name = "Empresa SAC",
             DocumentNumber = "",
-            Email = ""
+            Email = "",
+            Address = "Calle 1"
         };
 
-        // Actuar (Act) & Afirmar (Assert)
-        Assert.False(cliente.IsValid());
+        // Actuar (Act)
+        var result = _validator.Validate(dto);
+
+        // Afirmar (Assert)
+        Assert.False(result.IsValid);
     }
 
     // Verifica que un texto no numérico en edad arroje FormatException para ser capturado por try-catch.

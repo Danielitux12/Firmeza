@@ -1,139 +1,72 @@
-using System.Drawing;
+using Firmeza.Application.DTOs.Clientes;
+using Firmeza.Application.DTOs.Empresas;
 using Firmeza.Application.Interfaces;
-using Firmeza.Domain.Entities;
-using Firmeza.Domain.Enums;
 using OfficeOpenXml;
-using OfficeOpenXml.Style;
 
 namespace Firmeza.Infrastructure.Services;
 
-/// <summary>
-/// Exporta listados de productos, clientes y ventas hacia hojas de cálculo en formato Excel (.xlsx).
-/// </summary>
 public class ExcelExporter : IExcelExporter
 {
     public ExcelExporter()
     {
-        ExcelPackage.License.SetNonCommercialOrganization("Firmeza");
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
     }
 
-    // Exporta el catálogo completo de productos a formato Excel.
-    public byte[] ExportProducts(IEnumerable<Product> products)
+    public byte[] ExportClientes(IEnumerable<ClienteDto> clientes)
     {
         using var package = new ExcelPackage();
-        var ws = package.Workbook.Worksheets.Add("Productos");
+        var worksheet = package.Workbook.Worksheets.Add("Clientes");
 
-        // Encabezados
-        string[] headers = ["ID", "Nombre", "Categoría", "Precio ($)", "Stock", "Disponible", "Descripción"];
-        for (int i = 0; i < headers.Length; i++)
-        {
-            ws.Cells[1, i + 1].Value = headers[i];
-        }
+        worksheet.Cells[1, 1].Value = "Id";
+        worksheet.Cells[1, 2].Value = "Nombre";
+        worksheet.Cells[1, 3].Value = "Documento";
+        worksheet.Cells[1, 4].Value = "Email";
+        worksheet.Cells[1, 5].Value = "Teléfono";
+        worksheet.Cells[1, 6].Value = "Edad";
+        worksheet.Cells[1, 7].Value = "Dirección";
 
-        ApplyHeaderStyle(ws, headers.Length);
-
-        // Filas de datos
-        int row = 2;
-        foreach (var p in products)
-        {
-            ws.Cells[row, 1].Value = p.Id;
-            ws.Cells[row, 2].Value = p.Name;
-            ws.Cells[row, 3].Value = p.Category;
-            ws.Cells[row, 4].Value = p.Price;
-            ws.Cells[row, 4].Style.Numberformat.Format = "$#,##0.00";
-            ws.Cells[row, 5].Value = p.Stock;
-            ws.Cells[row, 6].Value = p.Status switch
-            {
-                ProductStatus.Available => "Disponible",
-                ProductStatus.Unavailable => "No disponible",
-                ProductStatus.Discontinued => "Descontinuado",
-                _ => "Desconocido"
-            };
-            ws.Cells[row, 7].Value = p.Description;
-            row++;
-        }
-
-        ws.Cells.AutoFitColumns();
-        return package.GetAsByteArray();
-    }
-
-    // Exporta el directorio de clientes a formato Excel.
-    public byte[] ExportClientes(IEnumerable<Cliente> clientes)
-    {
-        using var package = new ExcelPackage();
-        var ws = package.Workbook.Worksheets.Add("Clientes");
-
-        // Encabezados
-        string[] headers = ["ID", "Nombre", "Documento", "Correo Electrónico", "Teléfono", "Dirección"];
-        for (int i = 0; i < headers.Length; i++)
-        {
-            ws.Cells[1, i + 1].Value = headers[i];
-        }
-
-        ApplyHeaderStyle(ws, headers.Length);
-
-        // Filas de datos
         int row = 2;
         foreach (var c in clientes)
         {
-            ws.Cells[row, 1].Value = c.Id;
-            ws.Cells[row, 2].Value = c.Name;
-            ws.Cells[row, 3].Value = c.DocumentNumber;
-            ws.Cells[row, 4].Value = c.Email;
-            ws.Cells[row, 5].Value = c.Phone;
-            ws.Cells[row, 6].Value = c.Address;
+            worksheet.Cells[row, 1].Value = c.Id.ToString();
+            worksheet.Cells[row, 2].Value = c.Name;
+            worksheet.Cells[row, 3].Value = c.DocumentNumber;
+            worksheet.Cells[row, 4].Value = c.Email;
+            worksheet.Cells[row, 5].Value = c.Phone;
+            worksheet.Cells[row, 6].Value = c.Age;
+            worksheet.Cells[row, 7].Value = c.Address;
             row++;
         }
 
-        ws.Cells.AutoFitColumns();
+        worksheet.Cells.AutoFitColumns();
         return package.GetAsByteArray();
     }
 
-    // Exporta el historial de ventas con sus importes e impuestos a formato Excel.
-    public byte[] ExportSales(IEnumerable<Sale> sales)
+    public byte[] ExportEmpresas(IEnumerable<EmpresaDto> empresas)
     {
         using var package = new ExcelPackage();
-        var ws = package.Workbook.Worksheets.Add("Ventas");
+        var worksheet = package.Workbook.Worksheets.Add("Empresas");
 
-        // Encabezados
-        string[] headers = ["ID", "N° Venta", "Fecha", "Cliente", "Documento", "Subtotal ($)", "IVA 19% ($)", "Total ($)"];
-        for (int i = 0; i < headers.Length; i++)
-        {
-            ws.Cells[1, i + 1].Value = headers[i];
-        }
+        worksheet.Cells[1, 1].Value = "Id";
+        worksheet.Cells[1, 2].Value = "Razón Social";
+        worksheet.Cells[1, 3].Value = "NIT";
+        worksheet.Cells[1, 4].Value = "Email";
+        worksheet.Cells[1, 5].Value = "Teléfono";
+        worksheet.Cells[1, 6].Value = "Dirección";
 
-        ApplyHeaderStyle(ws, headers.Length);
-
-        // Filas de datos
         int row = 2;
-        foreach (var s in sales)
+        foreach (var e in empresas)
         {
-            ws.Cells[row, 1].Value = s.Id;
-            ws.Cells[row, 2].Value = s.SaleNumber;
-            ws.Cells[row, 3].Value = s.Date.ToString("yyyy-MM-dd HH:mm");
-            ws.Cells[row, 4].Value = s.Cliente?.Name ?? "N/A";
-            ws.Cells[row, 5].Value = s.Cliente?.DocumentNumber ?? "-";
-            ws.Cells[row, 6].Value = s.Subtotal;
-            ws.Cells[row, 6].Style.Numberformat.Format = "$#,##0.00";
-            ws.Cells[row, 7].Value = s.Tax;
-            ws.Cells[row, 7].Style.Numberformat.Format = "$#,##0.00";
-            ws.Cells[row, 8].Value = s.Total;
-            ws.Cells[row, 8].Style.Numberformat.Format = "$#,##0.00";
+            worksheet.Cells[row, 1].Value = e.Id.ToString();
+            worksheet.Cells[row, 2].Value = e.Name;
+            worksheet.Cells[row, 3].Value = e.Nit;
+            worksheet.Cells[row, 4].Value = e.Email;
+            worksheet.Cells[row, 5].Value = e.Phone;
+            worksheet.Cells[row, 6].Value = e.Address;
             row++;
         }
 
-        ws.Cells.AutoFitColumns();
+        worksheet.Cells.AutoFitColumns();
         return package.GetAsByteArray();
-    }
-
-    // Aplica color de fondo azul, texto blanco en negrita y bordes a los encabezados.
-    private void ApplyHeaderStyle(ExcelWorksheet ws, int columnsCount)
-    {
-        using var range = ws.Cells[1, 1, 1, columnsCount];
-        range.Style.Font.Bold = true;
-        range.Style.Font.Color.SetColor(Color.White);
-        range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-        range.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(15, 23, 42)); // Azul oscuro
-        range.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
     }
 }

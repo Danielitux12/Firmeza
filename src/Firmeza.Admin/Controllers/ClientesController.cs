@@ -1,3 +1,4 @@
+using Firmeza.Application.DTOs.Clientes;
 using Firmeza.Application.Interfaces;
 using Firmeza.Application.ViewModels.Clientes;
 using Firmeza.Domain.Entities;
@@ -167,12 +168,6 @@ public class ClientesController : Controller
             BirthDate = DateTime.UtcNow.AddYears(-parsedAge)
         };
 
-        if (!cliente.IsValid())
-        {
-            ModelState.AddModelError(string.Empty, "Los datos del cliente no son válidos.");
-            return View(model);
-        }
-
         _context.Clientes.Add(cliente);
         try
         {
@@ -190,7 +185,7 @@ public class ClientesController : Controller
 
     // Muestra el formulario para editar los datos de un cliente existente.
     [HttpGet]
-    public async Task<IActionResult> Edit(int id)
+    public async Task<IActionResult> Edit(Guid id)
     {
         var cliente = await _context.Clientes.FindAsync(id);
         if (cliente is null)
@@ -219,7 +214,7 @@ public class ClientesController : Controller
     // Guarda las modificaciones realizadas sobre un cliente.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, ClienteViewModel model)
+    public async Task<IActionResult> Edit(Guid id, ClienteViewModel model)
     {
         if (id != model.Id)
         {
@@ -288,12 +283,6 @@ public class ClientesController : Controller
         cliente.Address = model.Address.Trim();
         cliente.BirthDate = DateTime.UtcNow.AddYears(-parsedAge);
 
-        if (!cliente.IsValid())
-        {
-            ModelState.AddModelError(string.Empty, "Los datos del cliente no son válidos.");
-            return View(model);
-        }
-
         try
         {
             await _context.SaveChangesAsync();
@@ -310,11 +299,10 @@ public class ClientesController : Controller
 
     // Muestra la vista detallada de un cliente.
     [HttpGet]
-    public async Task<IActionResult> Details(int id)
+    public async Task<IActionResult> Details(Guid id)
     {
         var cliente = await _context.Clientes
             .AsNoTracking()
-            .Include(c => c.Sales)
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (cliente is null)
@@ -339,7 +327,7 @@ public class ClientesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Suspend(int id)
+    public async Task<IActionResult> Suspend(Guid id)
     {
         var cliente = await _context.Clientes.FindAsync(id);
         if (cliente is null)
@@ -356,7 +344,7 @@ public class ClientesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Activate(int id)
+    public async Task<IActionResult> Activate(Guid id)
     {
         var cliente = await _context.Clientes.FindAsync(id);
         if (cliente is null)
@@ -380,6 +368,17 @@ public class ClientesController : Controller
         var clientes = await _context.Clientes
             .AsNoTracking()
             .OrderBy(c => c.Name)
+            .Select(c => new ClienteDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                DocumentNumber = c.DocumentNumber,
+                Email = c.Email,
+                Phone = c.Phone,
+                Address = c.Address,
+                IsActive = c.IsActive,
+                Age = c.BirthDate.HasValue ? DateTime.UtcNow.Year - c.BirthDate.Value.Year : 0
+            })
             .ToListAsync();
 
         var fileBytes = _excelExporter.ExportClientes(clientes);
@@ -393,6 +392,17 @@ public class ClientesController : Controller
         var clientes = await _context.Clientes
             .AsNoTracking()
             .OrderBy(c => c.Name)
+            .Select(c => new ClienteDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                DocumentNumber = c.DocumentNumber,
+                Email = c.Email,
+                Phone = c.Phone,
+                Address = c.Address,
+                IsActive = c.IsActive,
+                Age = c.BirthDate.HasValue ? DateTime.UtcNow.Year - c.BirthDate.Value.Year : 0
+            })
             .ToListAsync();
 
         var fileBytes = _pdfExporter.ExportClientes(clientes);

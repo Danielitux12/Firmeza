@@ -7,6 +7,7 @@ using Firmeza.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Firmeza.Application.Validators;
 
 namespace Firmeza.API.Controllers;
 
@@ -74,8 +75,8 @@ public class EmpresasController : ControllerBase
         });
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<EmpresaDto>> GetById(int id, CancellationToken cancellationToken)
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<EmpresaDto>> GetById(Guid id, CancellationToken cancellationToken)
     {
         var empresa = await _context.Empresas.AsNoTracking()
             .FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
@@ -87,12 +88,15 @@ public class EmpresasController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<EmpresaDto>> Create(SaveEmpresaDto request, CancellationToken cancellationToken)
     {
+        var validator = new EmpresaValidator();
+        var validation = await validator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return Problem(statusCode: 400, title: "Datos inválidos", detail: validation.Errors[0].ErrorMessage);
+        }
+
         var empresa = _mapper.Map<Empresa>(request);
         Normalize(empresa);
-        if (!empresa.IsValid())
-        {
-            return Problem(statusCode: 400, title: "Datos inválidos", detail: "El nombre, NIT y correo de la empresa deben ser válidos.");
-        }
 
         if (await HasDuplicateAsync(empresa, null, cancellationToken))
         {
@@ -112,9 +116,16 @@ public class EmpresasController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = empresa.Id }, _mapper.Map<EmpresaDto>(empresa));
     }
 
-    [HttpPut("{id:int}")]
-    public async Task<ActionResult<EmpresaDto>> Update(int id, SaveEmpresaDto request, CancellationToken cancellationToken)
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<EmpresaDto>> Update(Guid id, SaveEmpresaDto request, CancellationToken cancellationToken)
     {
+        var validator = new EmpresaValidator();
+        var validation = await validator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return Problem(statusCode: 400, title: "Datos inválidos", detail: validation.Errors[0].ErrorMessage);
+        }
+
         var empresa = await _context.Empresas.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
         if (empresa is null)
         {
@@ -123,10 +134,6 @@ public class EmpresasController : ControllerBase
 
         _mapper.Map(request, empresa);
         Normalize(empresa);
-        if (!empresa.IsValid())
-        {
-            return Problem(statusCode: 400, title: "Datos inválidos", detail: "El nombre, NIT y correo de la empresa deben ser válidos.");
-        }
 
         if (await HasDuplicateAsync(empresa, id, cancellationToken))
         {
@@ -145,13 +152,13 @@ public class EmpresasController : ControllerBase
         return Ok(_mapper.Map<EmpresaDto>(empresa));
     }
 
-    [HttpPatch("{id:int}/suspend")]
-    public Task<IActionResult> Suspend(int id, CancellationToken cancellationToken) => SetActiveAsync(id, false, cancellationToken);
+    [HttpPatch("{id:guid}/suspend")]
+    public Task<IActionResult> Suspend(Guid id, CancellationToken cancellationToken) => SetActiveAsync(id, false, cancellationToken);
 
-    [HttpPatch("{id:int}/activate")]
-    public Task<IActionResult> Activate(int id, CancellationToken cancellationToken) => SetActiveAsync(id, true, cancellationToken);
+    [HttpPatch("{id:guid}/activate")]
+    public Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken) => SetActiveAsync(id, true, cancellationToken);
 
-    private async Task<IActionResult> SetActiveAsync(int id, bool active, CancellationToken cancellationToken)
+    private async Task<IActionResult> SetActiveAsync(Guid id, bool active, CancellationToken cancellationToken)
     {
         var empresa = await _context.Empresas.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
         if (empresa is null)
@@ -164,7 +171,7 @@ public class EmpresasController : ControllerBase
         return Ok(_mapper.Map<EmpresaDto>(empresa));
     }
 
-    private Task<bool> HasDuplicateAsync(Empresa empresa, int? excludingId, CancellationToken cancellationToken)
+    private Task<bool> HasDuplicateAsync(Empresa empresa, Guid? excludingId, CancellationToken cancellationToken)
     {
         var normalizedEmail = empresa.Email.Trim().ToLower();
         var normalizedNit = empresa.Nit.Trim().ToLower();

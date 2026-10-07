@@ -20,11 +20,8 @@ builder.Services.AddControllers();
 // Agrega AutoMapper con los perfiles de Firmeza.Application
 var mapperConfig = new AutoMapper.MapperConfiguration(cfg =>
 {
-    cfg.AddProfile<ProductMappingProfile>();
     cfg.AddProfile<ClienteMappingProfile>();
     cfg.AddProfile<EmpresaMappingProfile>();
-    cfg.AddProfile<TrabajadorMappingProfile>();
-    cfg.AddProfile<SaleMappingProfile>();
 });
 builder.Services.AddSingleton(mapperConfig.CreateMapper());
 
@@ -87,7 +84,7 @@ builder.Services.AddAuthentication(options =>
                 return;
             }
 
-            if (!int.TryParse(principal.FindFirst("ClienteId")?.Value, out var clienteId))
+            if (!Guid.TryParse(principal.FindFirst("ClienteId")?.Value, out var clienteId))
             {
                 context.Fail("La identidad de cliente no es válida.");
                 return;

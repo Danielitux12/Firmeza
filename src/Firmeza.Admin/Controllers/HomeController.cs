@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Firmeza.Admin.Controllers;
 
 /// <summary>
-/// Controlador principal del panel administrativo. Muestra el resumen del Dashboard.
+/// Controlador principal del panel administrativo enfocado en Clientes y Empresas.
 /// </summary>
 [Authorize(Roles = "Administrador")]
 public class HomeController : Controller
@@ -21,34 +21,24 @@ public class HomeController : Controller
         _context = context;
     }
 
-    // Muestra el panel principal con los totales de productos, clientes y ventas.
     public async Task<IActionResult> Index()
     {
         var model = new DashboardViewModel
         {
-            // Cuenta el total de productos en catálogo.
-            TotalProducts = await _context.Products.CountAsync(),
-
-            // Cuenta el total de clientes registrados.
             TotalClientes = await _context.Clientes.CountAsync(),
-
-            // Cuenta el total de ventas generadas.
-            TotalSales = await _context.Sales.CountAsync(),
-
-            // Suma el total recaudado en ventas (0 si no hay registros).
-            TotalSalesRevenue = await _context.Sales.SumAsync(s => (decimal?)s.Total) ?? 0m
+            TotalClientesActivos = await _context.Clientes.CountAsync(c => c.IsActive),
+            TotalEmpresas = await _context.Empresas.CountAsync(),
+            TotalEmpresasActivas = await _context.Empresas.CountAsync(e => e.IsActive)
         };
 
         return View(model);
     }
 
-    // Muestra la página de privacidad.
     public IActionResult Privacy()
     {
         return View();
     }
 
-    // Muestra la vista de error ante excepciones no controladas.
     [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()

@@ -31,12 +31,6 @@
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Products" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Products" ? "active" : "")">
-                        <i class="bi bi-box-seam"></i>
-                        <span>Productos</span>
-                    </a>
-                </li>
-                <li>
                     <a asp-controller="Clientes" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Clientes" ? "active" : "")">
                         <i class="bi bi-people"></i>
                         <span>Clientes</span>
@@ -46,18 +40,6 @@
                     <a asp-controller="Empresas" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Empresas" ? "active" : "")">
                         <i class="bi bi-building"></i>
                         <span>Empresas</span>
-                    </a>
-                </li>
-                <li>
-                    <a asp-controller="Sales" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Sales" ? "active" : "")">
-                        <i class="bi bi-receipt"></i>
-                        <span>Ventas</span>
-                    </a>
-                </li>
-                <li>
-                    <a asp-controller="Import" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Import" ? "active" : "")">
-                        <i class="bi bi-file-earmark-excel"></i>
-                        <span>Importar Excel</span>
                     </a>
                 </li>
             </ul>

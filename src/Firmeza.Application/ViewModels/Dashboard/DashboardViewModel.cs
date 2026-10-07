@@ -1,19 +1,12 @@
 namespace Firmeza.Application.ViewModels.Dashboard;
 
 /// <summary>
-/// Modelo de vista para las tarjetas principales del panel de administración.
+/// Modelo de vista para el panel de administración enfocado en Clientes y Empresas.
 /// </summary>
 public class DashboardViewModel
 {
-    // Cantidad total de productos registrados en catálogo.
-    public int TotalProducts { get; set; }
-
-    // Cantidad total de clientes registrados.
     public int TotalClientes { get; set; }
-
-    // Cantidad total de ventas realizadas.
-    public int TotalSales { get; set; }
-
-    // Monto acumulado total de ventas.
-    public decimal TotalSalesRevenue { get; set; }
+    public int TotalClientesActivos { get; set; }
+    public int TotalEmpresas { get; set; }
+    public int TotalEmpresasActivas { get; set; }
 }
