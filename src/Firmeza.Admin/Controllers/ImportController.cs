@@ -97,7 +97,7 @@ public class ImportController : Controller
     [HttpGet]
     public IActionResult DownloadSample()
     {
-        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        ExcelPackage.License.SetNonCommercialOrganization("Firmeza");
         using var package = new ExcelPackage();
         var ws = package.Workbook.Worksheets.Add("DatosImportacion");
 

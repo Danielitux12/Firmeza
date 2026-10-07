@@ -21,8 +21,7 @@ public class ExcelImporter : IExcelImporter
     public ExcelImporter(AppDbContext context)
     {
         _context = context;
-        // Configura la licencia no comercial de EPPlus requerida por versiones recientes.
-        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        ExcelPackage.License.SetNonCommercialOrganization("Firmeza");
     }
 
     // Lee el Excel, valida las filas, normaliza entidades y guarda los datos en la base de datos.

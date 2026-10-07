@@ -14,7 +14,7 @@ public class ExcelExporter : IExcelExporter
 {
     public ExcelExporter()
     {
-        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        ExcelPackage.License.SetNonCommercialOrganization("Firmeza");
     }
 
     // Exporta el catálogo completo de productos a formato Excel.
