@@ -32,10 +32,17 @@ Firmeza/
 ### 1. `Firmeza.Domain`
 - **Responsabilidad:** Contiene las entidades esenciales del negocio sin dependencias externas ni frameworks de persistencia.
 - **Entidades:**
-  - `Product`: Id, Name, Description, Price, Stock, Category, IsAvailable.
-  - `Customer`: Id, FullName, DocumentNumber, Email, Phone, BirthDate, Address, UserId.
-  - `Sale`: Id, SaleNumber, Date, CustomerId, Subtotal, Tax (IVA 19%), Total, ReceiptPath.
-  - `SaleDetail`: Id, SaleId, ProductId, Quantity, UnitPrice, LineTotal.
+  - `EntityBase` (abstracta): Id, IsActive y operaciones Activate/Deactivate compartidas.
+  - `NamedEntity` (abstracta): Name compartido.
+  - `ContactableEntity` (abstracta): Email, Phone, Address y validación protegida de email.
+  - `Cliente`: Name, DocumentNumber, Email, Phone, Address, BirthDate, UserId y ventas.
+  - `Trabajador`: Name, DocumentNumber, Position, Salary y datos de contacto; concepto separado de Cliente.
+  - `Empresa`: Name, Nit y datos de contacto; proveedora opcional de productos.
+  - `Product`: Name, Description, Price, Stock, Category, ProductStatus y EmpresaId opcional.
+  - `Sale`: SaleNumber, Date, ClienteId, Subtotal, Tax (IVA 19%), Total y ReceiptPath.
+  - `SaleDetail`: SaleId, ProductId, Quantity, UnitPrice y LineTotal.
+
+`SaleDetail.ProductId` sigue referenciando `Product`. EF usa TPC para mantener una tabla por entidad concreta sin columna discriminadora; las relaciones se tipan a entidades concretas.
 
 ### 2. `Firmeza.Application`
 - **Responsabilidad:** Define contratos (`interfaces`), modelos de transferencia (`DTOs`), modelos de vista (`ViewModels`) y transformaciones con `AutoMapper`.
@@ -60,6 +67,7 @@ Firmeza/
   - **Dashboard:** Métricas y tarjetas de resumen en tiempo real.
   - **Productos:** CRUD, búsqueda, filtros de categoría y disponibilidad, exportación Excel y PDF.
   - **Clientes:** CRUD con validaciones de unicidad, conversión de edad y exportación.
+  - **Empresas:** CRUD de proveedor con NIT único y suspensión/reactivación.
   - **Ventas:** Registro interactivo con cálculo automático de IVA (19%), descuento de stock en almacén y descarga de recibo.
   - **Importación Masiva:** Carga de Excel desnormalizado con reporte de errores en pantalla y logs `.txt`.
 
@@ -69,16 +77,25 @@ Firmeza/
 - **Documentación interactiva:** Swagger UI habilitado con soporte para autorización Bearer (`Authorize`).
 - **Endpoints clave:**
   - `POST /api/auth/register`: Registro de clientes, creación de usuario Identity y envío de correo de bienvenida.
-  - `POST /api/auth/login`: Retorna token JWT con reclamos de rol y `CustomerId`.
+  - `POST /api/auth/login`: Retorna token JWT con reclamos de rol y `ClienteId`.
   - `GET /api/products`: Catálogo de productos.
+  - `GET /api/Clientes` y `GET /api/Empresas`: listados paginados con `page`, `pageSize` (máximo 100), `search` y `status=active|inactive|all`.
+  - `GET /api/Clientes/{id}` y `GET /api/Empresas/{id}`: consulta por identificador.
+  - `POST` y `PUT` en ambos recursos: creación y actualización validadas.
+  - `PATCH /api/Clientes/{id}/suspend|activate` y `PATCH /api/Empresas/{id}/suspend|activate`: baja lógica y reactivación; no hay borrado físico.
+  - Las rutas de gestión requieren la política `SoloAdministrador`; errores de API se responden como `ProblemDetails` JSON.
   - `POST /api/sales`: Registro de ventas para clientes con descuento de inventario, emisión de recibo PDF y envío de comprobante al correo vía SMTP.
   - `GET /api/sales/{id}/receipt`: Descarga protegida del comprobante en PDF.
 
 ### 6. `Firmeza.Tests`
 - Pruebas unitarias automáticas con **xUnit** para verificar:
-  - Validaciones de dominio (`Product`, `Customer`).
+  - Validaciones de dominio (`Product`, `Cliente`).
   - Cálculo de subtotales, IVA 19% y totales de ventas (`Sale`, `SaleDetail`).
   - Mapeos de entrada y salida con `AutoMapper`.
+
+## Migraciones
+
+Se generaron `AddDomainInheritanceAndWorker` y `AddUniqueEmpresaEmail`. No se aplican automáticamente desde esta documentación; revisa y respalda la base antes de ejecutar una actualización. `AddDomainInheritanceAndWorker` renombra condicionalmente `employees` a `trabajadores`, conserva `LastName` como columna legado y migra el estado booleano de productos a `ProductStatus`.
 
 ---
 
