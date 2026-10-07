@@ -1,21 +1,23 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Firmeza.Application.ViewModels.Customers;
+namespace Firmeza.Application.ViewModels.Clientes;
 
 /// <summary>
 /// Modelo de vista para creación y edición de clientes.
 /// El campo Edad se recibe como texto según requerimiento para demostrar manejo de excepciones.
 /// </summary>
-public class CustomerViewModel
+public class ClienteViewModel
 {
     // Identificador único del cliente (0 al crear).
     public int Id { get; set; }
 
-    // Nombre completo del cliente.
-    [Required(ErrorMessage = "El nombre completo es obligatorio.")]
+    public bool IsActive { get; set; } = true;
+
+    // Nombre del cliente.
+    [Required(ErrorMessage = "El nombre es obligatorio.")]
     [StringLength(150, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 150 caracteres.")]
-    [Display(Name = "Nombre Completo")]
-    public string FullName { get; set; } = string.Empty;
+    [Display(Name = "Nombre")]
+    public string Name { get; set; } = string.Empty;
 
     // Documento de identidad (DNI/RUC/Cédula).
     [Required(ErrorMessage = "El número de documento es obligatorio.")]
@@ -32,7 +34,7 @@ public class CustomerViewModel
 
     // Teléfono de contacto.
     [Required(ErrorMessage = "El teléfono es obligatorio.")]
-    [RegularExpression(@"^[0-9+\-\s]{7,20}$", ErrorMessage = "Ingresa un número de teléfono válido (solo dígitos y guiones).")]
+    [RegularExpression(@"^[0-9+\-\s]{7,30}$", ErrorMessage = "Ingresa un número de teléfono válido (solo dígitos y guiones).")]
     [Display(Name = "Teléfono")]
     public string Phone { get; set; } = string.Empty;
 

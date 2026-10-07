@@ -44,11 +44,10 @@
                             <span asp-validation-for="Stock" class="text-danger small"></span>
                         </div>
 
-                        <div class="col-md-4 d-flex align-items-center mt-4">
-                            <div class="form-check form-switch pt-2">
-                                <input asp-for="IsAvailable" class="form-check-input" type="checkbox" role="switch" />
-                                <label asp-for="IsAvailable" class="form-check-label fw-semibold"></label>
-                            </div>
+                        <div class="col-md-4">
+                            <label asp-for="Status" class="form-label fw-semibold"></label>
+                            <select asp-for="Status" asp-items="Html.GetEnumSelectList<ProductStatus>()" class="form-select"></select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
                         </div>
 
                         <div class="col-12">

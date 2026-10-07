@@ -9,7 +9,7 @@ public class DashboardViewModel
     public int TotalProducts { get; set; }
 
     // Cantidad total de clientes registrados.
-    public int TotalCustomers { get; set; }
+    public int TotalClientes { get; set; }
 
     // Cantidad total de ventas realizadas.
     public int TotalSales { get; set; }

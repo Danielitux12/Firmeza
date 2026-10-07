@@ -11,13 +11,13 @@ public class SaleCreateViewModel
     [Required(ErrorMessage = "Debes seleccionar un cliente.")]
     [Range(1, int.MaxValue, ErrorMessage = "Selecciona un cliente válido.")]
     [Display(Name = "Cliente")]
-    public int CustomerId { get; set; }
+    public int ClienteId { get; set; }
 
     // Líneas de productos a vender.
     public List<SaleItemInputViewModel> Items { get; set; } = new();
 
     // Catálogo de clientes para el selector de la vista.
-    public List<CustomerOptionViewModel> AvailableCustomers { get; set; } = new();
+    public List<ClienteOptionViewModel> AvailableClientes { get; set; } = new();
 
     // Catálogo de productos disponibles con existencias para el selector.
     public List<ProductOptionViewModel> AvailableProducts { get; set; } = new();
@@ -40,7 +40,7 @@ public class SaleItemInputViewModel
 /// <summary>
 /// Elemento para poblar el dropdown de clientes.
 /// </summary>
-public class CustomerOptionViewModel
+public class ClienteOptionViewModel
 {
     public int Id { get; set; }
     public string DisplayText { get; set; } = string.Empty;

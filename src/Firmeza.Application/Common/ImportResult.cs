@@ -12,7 +12,7 @@ public class ImportResult
     public int SuccessRows { get; set; }
 
     // Cantidad de clientes creados o actualizados.
-    public int CustomersProcessed { get; set; }
+    public int ClientesProcessed { get; set; }
 
     // Cantidad de productos creados o actualizados.
     public int ProductsProcessed { get; set; }

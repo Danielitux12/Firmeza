@@ -2,17 +2,17 @@ using Firmeza.Domain.Entities;
 
 namespace Firmeza.Tests;
 
-public class CustomerTests
+public class ClienteTests
 {
     // Verifica que un cliente con datos válidos pase la validación IsValid.
     [Fact]
-    public void Customer_WithValidData_ReturnsTrue()
+    public void Cliente_WithValidData_ReturnsTrue()
     {
         // Organizar (Arrange)
-        var customer = new Customer
+        var cliente = new Cliente
         {
             Id = 1,
-            FullName = "Juan Perez",
+            Name = "Juan Perez",
             DocumentNumber = "12345678",
             Email = "juan.perez@example.com",
             Phone = "987654321",
@@ -20,24 +20,24 @@ public class CustomerTests
         };
 
         // Actuar (Act) & Afirmar (Assert)
-        Assert.True(customer.IsValid());
+        Assert.True(cliente.IsValid());
     }
 
     // Verifica que un cliente sin documento o correo no sea válido.
     [Fact]
-    public void Customer_MissingRequiredData_ReturnsFalse()
+    public void Cliente_MissingRequiredData_ReturnsFalse()
     {
         // Organizar (Arrange)
-        var customer = new Customer
+        var cliente = new Cliente
         {
             Id = 2,
-            FullName = "Empresa SAC",
+            Name = "Empresa SAC",
             DocumentNumber = "",
             Email = ""
         };
 
         // Actuar (Act) & Afirmar (Assert)
-        Assert.False(customer.IsValid());
+        Assert.False(cliente.IsValid());
     }
 
     // Verifica que un texto no numérico en edad arroje FormatException para ser capturado por try-catch.

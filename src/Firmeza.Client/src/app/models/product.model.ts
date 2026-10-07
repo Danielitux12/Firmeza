@@ -6,7 +6,9 @@ export enum ProductStatus {
 
 export interface Product {
   id?: number;
+  empresaId?: number | null;
   name: string;
   price: number;
-  isAvailable?: boolean;
+  status?: ProductStatus;
+  isActive?: boolean;
 }

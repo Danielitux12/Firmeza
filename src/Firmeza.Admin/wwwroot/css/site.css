@@ -160,7 +160,7 @@ html, body {
 }
 
 .metric-card.metric-products { border-left-color: #2563eb; }
-.metric-card.metric-customers { border-left-color: #059669; }
+.metric-card.metric-clientes { border-left-color: #059669; }
 .metric-card.metric-sales { border-left-color: #d97706; }
 
 .metric-number {

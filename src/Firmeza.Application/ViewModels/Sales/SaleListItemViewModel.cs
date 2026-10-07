@@ -15,10 +15,10 @@ public class SaleListItemViewModel
     public DateTime Date { get; set; }
 
     // Nombre completo del cliente.
-    public string CustomerName { get; set; } = string.Empty;
+    public string ClienteName { get; set; } = string.Empty;
 
     // Documento del cliente.
-    public string CustomerDocument { get; set; } = string.Empty;
+    public string ClienteDocument { get; set; } = string.Empty;
 
     // Cantidad total de líneas o productos comprados.
     public int TotalItems { get; set; }

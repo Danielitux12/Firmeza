@@ -1,6 +1,7 @@
 using System.Drawing;
 using Firmeza.Application.Interfaces;
 using Firmeza.Domain.Entities;
+using Firmeza.Domain.Enums;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 
@@ -41,7 +42,13 @@ public class ExcelExporter : IExcelExporter
             ws.Cells[row, 4].Value = p.Price;
             ws.Cells[row, 4].Style.Numberformat.Format = "$#,##0.00";
             ws.Cells[row, 5].Value = p.Stock;
-            ws.Cells[row, 6].Value = p.IsAvailable ? "Sí" : "No";
+            ws.Cells[row, 6].Value = p.Status switch
+            {
+                ProductStatus.Available => "Disponible",
+                ProductStatus.Unavailable => "No disponible",
+                ProductStatus.Discontinued => "Descontinuado",
+                _ => "Desconocido"
+            };
             ws.Cells[row, 7].Value = p.Description;
             row++;
         }
@@ -51,13 +58,13 @@ public class ExcelExporter : IExcelExporter
     }
 
     // Exporta el directorio de clientes a formato Excel.
-    public byte[] ExportCustomers(IEnumerable<Customer> customers)
+    public byte[] ExportClientes(IEnumerable<Cliente> clientes)
     {
         using var package = new ExcelPackage();
         var ws = package.Workbook.Worksheets.Add("Clientes");
 
         // Encabezados
-        string[] headers = ["ID", "Nombre Completo", "Documento", "Correo Electrónico", "Teléfono", "Dirección"];
+        string[] headers = ["ID", "Nombre", "Documento", "Correo Electrónico", "Teléfono", "Dirección"];
         for (int i = 0; i < headers.Length; i++)
         {
             ws.Cells[1, i + 1].Value = headers[i];
@@ -67,10 +74,10 @@ public class ExcelExporter : IExcelExporter
 
         // Filas de datos
         int row = 2;
-        foreach (var c in customers)
+        foreach (var c in clientes)
         {
             ws.Cells[row, 1].Value = c.Id;
-            ws.Cells[row, 2].Value = c.FullName;
+            ws.Cells[row, 2].Value = c.Name;
             ws.Cells[row, 3].Value = c.DocumentNumber;
             ws.Cells[row, 4].Value = c.Email;
             ws.Cells[row, 5].Value = c.Phone;
@@ -104,8 +111,8 @@ public class ExcelExporter : IExcelExporter
             ws.Cells[row, 1].Value = s.Id;
             ws.Cells[row, 2].Value = s.SaleNumber;
             ws.Cells[row, 3].Value = s.Date.ToString("yyyy-MM-dd HH:mm");
-            ws.Cells[row, 4].Value = s.Customer?.FullName ?? "N/A";
-            ws.Cells[row, 5].Value = s.Customer?.DocumentNumber ?? "-";
+            ws.Cells[row, 4].Value = s.Cliente?.Name ?? "N/A";
+            ws.Cells[row, 5].Value = s.Cliente?.DocumentNumber ?? "-";
             ws.Cells[row, 6].Value = s.Subtotal;
             ws.Cells[row, 6].Style.Numberformat.Format = "$#,##0.00";
             ws.Cells[row, 7].Value = s.Tax;

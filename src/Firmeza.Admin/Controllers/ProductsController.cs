@@ -1,6 +1,7 @@
 using Firmeza.Application.Interfaces;
 using Firmeza.Application.ViewModels.Products;
 using Firmeza.Domain.Entities;
+using Firmeza.Domain.Enums;
 using Firmeza.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,7 @@ public class ProductsController : Controller
 
     // Muestra el listado de productos con opciones de búsqueda por nombre, filtro por categoría y disponibilidad.
     [HttpGet]
-    public async Task<IActionResult> Index(string? searchName, string? selectedCategory, bool? availabilityFilter)
+    public async Task<IActionResult> Index(string? searchName, string? selectedCategory, ProductStatus? statusFilter)
     {
         var query = _context.Products.AsNoTracking().AsQueryable();
 
@@ -47,10 +48,9 @@ public class ProductsController : Controller
             query = query.Where(p => p.Category == selectedCategory);
         }
 
-        // Filtro por disponibilidad (disponibles o no disponibles).
-        if (availabilityFilter.HasValue)
+        if (statusFilter.HasValue)
         {
-            query = query.Where(p => p.IsAvailable == availabilityFilter.Value);
+            query = query.Where(p => p.Status == statusFilter.Value);
         }
 
         var products = await query
@@ -63,7 +63,7 @@ public class ProductsController : Controller
                 Price = p.Price,
                 Stock = p.Stock,
                 Category = p.Category,
-                IsAvailable = p.IsAvailable
+                Status = p.Status
             })
             .ToListAsync();
 
@@ -79,7 +79,7 @@ public class ProductsController : Controller
         {
             SearchName = searchName,
             SelectedCategory = selectedCategory,
-            AvailabilityFilter = availabilityFilter,
+            StatusFilter = statusFilter,
             AvailableCategories = categories,
             Products = products
         };
@@ -91,7 +91,7 @@ public class ProductsController : Controller
     [HttpGet]
     public IActionResult Create()
     {
-        return View(new ProductViewModel { IsAvailable = true });
+        return View(new ProductViewModel { Status = ProductStatus.Available });
     }
 
     // Guarda el nuevo producto en la base de datos tras validar los datos.
@@ -111,8 +111,9 @@ public class ProductsController : Controller
             Price = model.Price,
             Stock = model.Stock,
             Category = model.Category.Trim(),
-            // Si el stock es 0, se marca automáticamente como no disponible.
-            IsAvailable = model.Stock > 0 && model.IsAvailable
+            Status = model.Status == ProductStatus.Available && model.Stock == 0
+                ? ProductStatus.Unavailable
+                : model.Status
         };
 
         _context.Products.Add(product);
@@ -140,7 +141,7 @@ public class ProductsController : Controller
             Price = product.Price,
             Stock = product.Stock,
             Category = product.Category,
-            IsAvailable = product.IsAvailable
+            Status = product.Status
         };
 
         return View(model);
@@ -172,7 +173,9 @@ public class ProductsController : Controller
         product.Price = model.Price;
         product.Stock = model.Stock;
         product.Category = model.Category.Trim();
-        product.IsAvailable = model.Stock > 0 && model.IsAvailable;
+        product.Status = model.Status == ProductStatus.Available && model.Stock == 0
+            ? ProductStatus.Unavailable
+            : model.Status;
 
         await _context.SaveChangesAsync();
 
@@ -201,7 +204,7 @@ public class ProductsController : Controller
             Price = product.Price,
             Stock = product.Stock,
             Category = product.Category,
-            IsAvailable = product.IsAvailable
+            Status = product.Status
         };
 
         return View(model);
@@ -228,7 +231,7 @@ public class ProductsController : Controller
             Price = product.Price,
             Stock = product.Stock,
             Category = product.Category,
-            IsAvailable = product.IsAvailable
+            Status = product.Status
         };
 
         return View(model);
@@ -249,7 +252,7 @@ public class ProductsController : Controller
         var hasSales = await _context.SaleDetails.AnyAsync(sd => sd.ProductId == id);
         if (hasSales)
         {
-            product.IsAvailable = false;
+            product.Status = ProductStatus.Unavailable;
             await _context.SaveChangesAsync();
             TempData["WarningMessage"] = $"El producto '{product.Name}' tiene ventas asociadas, por lo que fue marcado como 'No Disponible' en lugar de eliminarse.";
         }

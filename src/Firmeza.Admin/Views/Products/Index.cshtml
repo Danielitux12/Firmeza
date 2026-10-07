@@ -45,11 +45,9 @@
             </div>
 
             <div class="col-12 col-md-3">
-                <label class="form-label small fw-semibold">Disponibilidad</label>
-                <select name="availabilityFilter" class="form-select">
+                <label asp-for="StatusFilter" class="form-label small fw-semibold">Estado</label>
+                <select asp-for="StatusFilter" asp-items="Html.GetEnumSelectList<ProductStatus>()" class="form-select">
                     <option value="">-- Todos los estados --</option>
-                    <option value="true" selected="@(Model.AvailabilityFilter == true ? "selected" : null)">Solo Disponibles</option>
-                    <option value="false" selected="@(Model.AvailabilityFilter == false ? "selected" : null)">No Disponibles</option>
                 </select>
             </div>
 
@@ -112,14 +110,7 @@
                                 </span>
                             </td>
                             <td>
-                                @if (product.IsAvailable)
-                                {
-                                    <span class="badge-available">Disponible</span>
-                                }
-                                else
-                                {
-                                    <span class="badge-unavailable">Agotado / Inactivo</span>
-                                }
+                                <span class="@(product.Status == ProductStatus.Available ? "badge-available" : "badge-unavailable")">@product.StatusLabel</span>
                             </td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">

@@ -1,6 +1,7 @@
 using Firmeza.Application.Interfaces;
 using Firmeza.Application.ViewModels.Sales;
 using Firmeza.Domain.Entities;
+using Firmeza.Domain.Enums;
 using Firmeza.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +41,7 @@ public class SalesController : Controller
     {
         var sales = await _context.Sales
             .AsNoTracking()
-            .Include(s => s.Customer)
+            .Include(s => s.Cliente)
             .Include(s => s.SaleDetails)
             .OrderByDescending(s => s.Date)
             .Select(s => new SaleListItemViewModel
@@ -48,8 +49,8 @@ public class SalesController : Controller
                 Id = s.Id,
                 SaleNumber = s.SaleNumber,
                 Date = s.Date,
-                CustomerName = s.Customer != null ? s.Customer.FullName : "Cliente no registrado",
-                CustomerDocument = s.Customer != null ? s.Customer.DocumentNumber : "-",
+                ClienteName = s.Cliente != null ? s.Cliente.Name : "Cliente no registrado",
+                ClienteDocument = s.Cliente != null ? s.Cliente.DocumentNumber : "-",
                 TotalItems = s.SaleDetails.Sum(sd => sd.Quantity),
                 Subtotal = s.Subtotal,
                 Tax = s.Tax,
@@ -67,7 +68,7 @@ public class SalesController : Controller
     {
         var sale = await _context.Sales
             .AsNoTracking()
-            .Include(s => s.Customer)
+            .Include(s => s.Cliente)
             .Include(s => s.SaleDetails)
             .ThenInclude(sd => sd.Product)
             .FirstOrDefaultAsync(s => s.Id == id);
@@ -82,10 +83,10 @@ public class SalesController : Controller
             Id = sale.Id,
             SaleNumber = sale.SaleNumber,
             Date = sale.Date,
-            CustomerName = sale.Customer?.FullName ?? "N/A",
-            CustomerDocument = sale.Customer?.DocumentNumber ?? "N/A",
-            CustomerEmail = sale.Customer?.Email ?? "N/A",
-            CustomerPhone = sale.Customer?.Phone ?? "N/A",
+            ClienteName = sale.Cliente?.Name ?? "N/A",
+            ClienteDocument = sale.Cliente?.DocumentNumber ?? "N/A",
+            ClienteEmail = sale.Cliente?.Email ?? "N/A",
+            ClientePhone = sale.Cliente?.Phone ?? "N/A",
             Subtotal = sale.Subtotal,
             Tax = sale.Tax,
             Total = sale.Total,
@@ -128,10 +129,10 @@ public class SalesController : Controller
         }
 
         // 2. Valida que el cliente exista.
-        var customerExists = await _context.Customers.AnyAsync(c => c.Id == model.CustomerId);
-        if (!customerExists)
+        var clienteExists = await _context.Clientes.AnyAsync(c => c.Id == model.ClienteId);
+        if (!clienteExists)
         {
-            ModelState.AddModelError(nameof(model.CustomerId), "El cliente seleccionado no existe.");
+            ModelState.AddModelError(nameof(model.ClienteId), "El cliente seleccionado no existe.");
         }
 
         // 3. Valida el stock disponible de cada producto solicitado.
@@ -148,7 +149,7 @@ public class SalesController : Controller
                 continue;
             }
 
-            if (!product.IsAvailable)
+            if (product.Status != ProductStatus.Available)
             {
                 ModelState.AddModelError(string.Empty, $"El producto '{product.Name}' no está disponible para venta.");
             }
@@ -171,7 +172,7 @@ public class SalesController : Controller
         var sale = new Sale
         {
             SaleNumber = saleNumber,
-            CustomerId = model.CustomerId,
+            ClienteId = model.ClienteId,
             Date = DateTime.UtcNow
         };
 
@@ -204,7 +205,7 @@ public class SalesController : Controller
         try
         {
             // Asegura que las propiedades de navegación de cliente y producto estén enlazadas
-            sale.Customer = await _context.Customers.FindAsync(sale.CustomerId);
+            sale.Cliente = await _context.Clientes.FindAsync(sale.ClienteId);
             string webRoot = _webHostEnvironment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
             var receiptPath = await _receiptGenerator.GenerateReceiptPdfAsync(sale, webRoot);
             sale.ReceiptPath = receiptPath;
@@ -225,7 +226,7 @@ public class SalesController : Controller
     {
         var sales = await _context.Sales
             .AsNoTracking()
-            .Include(s => s.Customer)
+            .Include(s => s.Cliente)
             .OrderByDescending(s => s.Date)
             .ToListAsync();
 
@@ -239,7 +240,7 @@ public class SalesController : Controller
     {
         var sales = await _context.Sales
             .AsNoTracking()
-            .Include(s => s.Customer)
+            .Include(s => s.Cliente)
             .OrderByDescending(s => s.Date)
             .ToListAsync();
 
@@ -252,7 +253,7 @@ public class SalesController : Controller
     public async Task<IActionResult> DownloadReceipt(int id)
     {
         var sale = await _context.Sales
-            .Include(s => s.Customer)
+            .Include(s => s.Cliente)
             .Include(s => s.SaleDetails)
             .ThenInclude(sd => sd.Product)
             .FirstOrDefaultAsync(s => s.Id == id);
@@ -281,19 +282,19 @@ public class SalesController : Controller
     // Carga los clientes y productos disponibles para poblar los selectores del formulario.
     private async Task PopulateSelectListsAsync(SaleCreateViewModel model)
     {
-        model.AvailableCustomers = await _context.Customers
+        model.AvailableClientes = await _context.Clientes
             .AsNoTracking()
-            .OrderBy(c => c.FullName)
-            .Select(c => new CustomerOptionViewModel
+            .OrderBy(c => c.Name)
+            .Select(c => new ClienteOptionViewModel
             {
                 Id = c.Id,
-                DisplayText = $"{c.FullName} - Doc: {c.DocumentNumber}"
+                DisplayText = $"{c.Name} - Doc: {c.DocumentNumber}"
             })
             .ToListAsync();
 
         model.AvailableProducts = await _context.Products
             .AsNoTracking()
-            .Where(p => p.IsAvailable && p.Stock > 0)
+            .Where(p => p.Status == ProductStatus.Available && p.Stock > 0)
             .OrderBy(p => p.Name)
             .Select(p => new ProductOptionViewModel
             {

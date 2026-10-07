@@ -8,8 +8,8 @@ public class SaleDto
     public int Id { get; set; }
     public string SaleNumber { get; set; } = string.Empty;
     public DateTime Date { get; set; }
-    public int CustomerId { get; set; }
-    public string CustomerName { get; set; } = string.Empty;
+    public int ClienteId { get; set; }
+    public string ClienteName { get; set; } = string.Empty;
     public decimal Subtotal { get; set; }
     public decimal Tax { get; set; }
     public decimal Total { get; set; }

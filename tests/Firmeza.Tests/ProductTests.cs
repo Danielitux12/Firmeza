@@ -1,4 +1,5 @@
 using Firmeza.Domain.Entities;
+using Firmeza.Domain.Enums;
 
 namespace Firmeza.Tests;
 
@@ -17,7 +18,7 @@ public class ProductTests
             Price = 28.50m,
             Stock = 100,
             Category = "Construcción",
-            IsAvailable = true
+            Status = ProductStatus.Available
         };
 
         // Afirmar (Assert)
@@ -40,7 +41,7 @@ public class ProductTests
             Name = "Pintura Blanca",
             Price = 50.00m,
             Stock = 5,
-            IsAvailable = true
+            Status = ProductStatus.Available
         };
 
         // Actuar (Act)
@@ -48,6 +49,21 @@ public class ProductTests
 
         // Afirmar (Assert)
         Assert.Equal(0, product.Stock);
-        Assert.False(product.IsAvailable);
+        Assert.Equal(ProductStatus.Unavailable, product.Status);
+    }
+
+    [Theory]
+    [InlineData(ProductStatus.Unavailable)]
+    [InlineData(ProductStatus.Discontinued)]
+    public void Product_HasStock_RejectsNonSellableStatuses(ProductStatus status)
+    {
+        var product = new Product
+        {
+            Name = "Taladro",
+            Stock = 5,
+            Status = status
+        };
+
+        Assert.False(product.HasStock(1));
     }
 }

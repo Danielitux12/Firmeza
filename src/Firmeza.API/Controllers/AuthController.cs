@@ -44,7 +44,7 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Registra un nuevo usuario con rol 'Cliente' y crea su entidad Customer asociada.
+    /// Registra un nuevo usuario con rol 'Cliente' y crea su entidad Cliente asociada.
     /// Envía además un correo electrónico de bienvenida.
     /// </summary>
     [HttpPost("register")]
@@ -62,8 +62,8 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "El correo electrónico ya se encuentra registrado." });
         }
 
-        var existingCustomer = await _context.Customers.AnyAsync(c => c.DocumentNumber == request.DocumentNumber || c.Email == request.Email);
-        if (existingCustomer)
+        var existingCliente = await _context.Clientes.AnyAsync(c => c.DocumentNumber == request.DocumentNumber || c.Email == request.Email);
+        if (existingCliente)
         {
             return BadRequest(new { message = "Ya existe un cliente con ese número de documento o correo electrónico." });
         }
@@ -90,10 +90,10 @@ public class AuthController : ControllerBase
         }
         await _userManager.AddToRoleAsync(user, "Cliente");
 
-        // 3. Crear el Customer vinculado
-        var customer = new Customer
+        // 3. Crear el Cliente vinculado
+        var cliente = new Cliente
         {
-            FullName = request.FullName,
+            Name = request.Name,
             DocumentNumber = request.DocumentNumber,
             Email = request.Email,
             Phone = request.Phone,
@@ -102,7 +102,7 @@ public class AuthController : ControllerBase
             UserId = user.Id
         };
 
-        _context.Customers.Add(customer);
+        _context.Clientes.Add(cliente);
         await _context.SaveChangesAsync();
 
         // 4. Enviar correo de bienvenida en segundo plano
@@ -112,16 +112,16 @@ public class AuthController : ControllerBase
             {
                 var subject = "¡Bienvenido a Tienda Firmeza!";
                 var body = $@"
-                    <h2>¡Hola, {customer.FullName}!</h2>
+                    <h2>¡Hola, {cliente.Name}!</h2>
                     <p>Tu cuenta ha sido creada exitosamente en <strong>Firmeza</strong>.</p>
                     <p>Ahora puedes acceder a nuestro catálogo de productos y realizar tus compras en línea.</p>
                     <br/>
                     <p>Atentamente,<br/>Equipo Firmeza</p>";
-                await _emailSender.SendEmailAsync(customer.Email, subject, body);
+                await _emailSender.SendEmailAsync(cliente.Email, subject, body);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "No se pudo enviar el correo de bienvenida a {Email}", customer.Email);
+                _logger.LogWarning(ex, "No se pudo enviar el correo de bienvenida a {Email}", cliente.Email);
             }
         });
 
@@ -142,15 +142,30 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            return Unauthorized(new { message = "Credenciales incorrectas (correo o contraseña no válidos)." });
+            return Unauthorized(new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Credenciales inválidas",
+                Detail = "El correo o la contraseña no son válidos."
+            });
         }
 
         var roles = await _userManager.GetRolesAsync(user);
         var primaryRole = roles.FirstOrDefault() ?? "Cliente";
 
-        // Obtener el CustomerId asociado si existe
-        var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id || c.Email == user.Email);
-        var customerIdStr = customer != null ? customer.Id.ToString() : string.Empty;
+        // Obtener el ClienteId asociado si existe
+        var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.UserId == user.Id || c.Email == user.Email);
+        if (primaryRole == "Cliente" && (cliente is null || !cliente.IsActive))
+        {
+            return Unauthorized(new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Cuenta suspendida",
+                Detail = "La cuenta de cliente no existe o está suspendida."
+            });
+        }
+
+        var clienteIdStr = cliente != null ? cliente.Id.ToString() : string.Empty;
 
         // Construir reclamos (Claims) del JWT
         var claims = new List<Claim>
@@ -161,9 +176,9 @@ public class AuthController : ControllerBase
             new Claim(ClaimTypes.Role, primaryRole)
         };
 
-        if (!string.IsNullOrEmpty(customerIdStr))
+        if (!string.IsNullOrEmpty(clienteIdStr))
         {
-            claims.Add(new Claim("CustomerId", customerIdStr));
+            claims.Add(new Claim("ClienteId", clienteIdStr));
         }
 
         // Para compatibilidad con roles múltiples

@@ -11,7 +11,7 @@ public interface IExcelExporter
     byte[] ExportProducts(IEnumerable<Product> products);
 
     // Genera el archivo Excel binario con el listado de clientes.
-    byte[] ExportCustomers(IEnumerable<Customer> customers);
+    byte[] ExportClientes(IEnumerable<Cliente> clientes);
 
     // Genera el archivo Excel binario con el listado de ventas.
     byte[] ExportSales(IEnumerable<Sale> sales);

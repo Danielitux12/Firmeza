@@ -11,7 +11,7 @@ public interface IPdfExporter
     byte[] ExportProducts(IEnumerable<Product> products);
 
     // Genera el documento PDF con el directorio de clientes.
-    byte[] ExportCustomers(IEnumerable<Customer> customers);
+    byte[] ExportClientes(IEnumerable<Cliente> clientes);
 
     // Genera el documento PDF con el historial de ventas.
     byte[] ExportSales(IEnumerable<Sale> sales);

@@ -1,35 +1,25 @@
+using Firmeza.Domain.Enums;
+
 namespace Firmeza.Domain.Entities;
 
-/// <summary>
-/// Representa un producto disponible en el inventario de la ferretería.
-/// </summary>
-public class Product
+public class Product : NamedEntity
 {
-    // Identificador único del producto.
-    public int Id { get; set; }
-
-    // Nombre comercial del producto.
-    public string Name { get; set; } = string.Empty;
-
-    // Descripción detallada del producto.
     public string Description { get; set; } = string.Empty;
 
-    // Precio unitario de venta.
     public decimal Price { get; set; }
 
-    // Cantidad disponible en stock.
     public int Stock { get; set; }
 
-    // Categoría a la que pertenece el producto (ej. Cemento, Herramientas, etc.).
     public string Category { get; set; } = string.Empty;
 
-    // Indica si el producto está disponible para la venta.
-    public bool IsAvailable { get; set; } = true;
+    public ProductStatus Status { get; set; } = ProductStatus.Available;
 
-    // Colección de detalles de venta asociados a este producto.
+    public int? EmpresaId { get; set; }
+
+    public Empresa? Empresa { get; set; }
+
     public ICollection<SaleDetail> SaleDetails { get; set; } = new List<SaleDetail>();
 
-    // Valida que el producto tenga datos correctos y precio no negativo.
     public bool IsValid()
     {
         return !string.IsNullOrWhiteSpace(Name)
@@ -37,13 +27,11 @@ public class Product
             && Stock >= 0;
     }
 
-    // Verifica si hay existencias suficientes para satisfacer la cantidad solicitada.
     public bool HasStock(int quantity)
     {
-        return IsAvailable && Stock >= quantity && quantity > 0;
+        return Status == ProductStatus.Available && Stock >= quantity && quantity > 0;
     }
 
-    // Reduce el stock según la cantidad vendida.
     public void ReduceStock(int quantity)
     {
         if (!HasStock(quantity))
@@ -54,7 +42,7 @@ public class Product
         Stock -= quantity;
         if (Stock == 0)
         {
-            IsAvailable = false;
+            Status = ProductStatus.Unavailable;
         }
     }
 }
