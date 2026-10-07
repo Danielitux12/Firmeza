@@ -12,7 +12,6 @@ public class EmpresaMappingProfile : Profile
 
         CreateMap<SaveEmpresaDto, Empresa>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.IsActive, opt => opt.Ignore())
-            .ForMember(dest => dest.Products, opt => opt.Ignore());
+            .ForMember(dest => dest.IsActive, opt => opt.Ignore());
     }
 }
