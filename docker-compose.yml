@@ -12,16 +12,36 @@ services:
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=firmeza;Username=firmeza;Password=coder1234"
       ADMIN_EMAIL: "${ADMIN_EMAIL:-admin@firmeza.com}"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-Admin123*}"
+      CLIENT_EMAIL: "${CLIENT_EMAIL:-cliente@firmeza.com}"
+      CLIENT_PASSWORD: "${CLIENT_PASSWORD:-Cliente123*}"
       Admin__Email: "${ADMIN_EMAIL:-admin@firmeza.com}"
       Admin__Password: "${ADMIN_PASSWORD:-Admin123*}"
       Auth__AdminUser: "${ADMIN_EMAIL:-admin@firmeza.com}"
       Auth__AdminPassword: "${ADMIN_PASSWORD:-Admin123*}"
+      Auth__ClientUser: "${CLIENT_EMAIL:-cliente@firmeza.com}"
+      Auth__ClientPassword: "${CLIENT_PASSWORD:-Cliente123*}"
     env_file:
       - path: .env
         required: false
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
+
+  client:
+    build:
+      context: src/Firmeza.Client
+      dockerfile: Dockerfile
+    image: firmeza-client
+    container_name: firmeza-client
+    ports:
+      - "4200:80"
+    environment:
+      CLIENT_EMAIL: "${CLIENT_EMAIL:-cliente@firmeza.com}"
+      CLIENT_PASSWORD: "${CLIENT_PASSWORD:-Cliente123*}"
+    env_file:
+      - path: .env
+        required: false
     restart: unless-stopped
 
   db:
