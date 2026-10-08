@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
         {
             options.UseNpgsql(connectionString);
+            options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
         });
 
         // 2. ASP.NET Core Identity

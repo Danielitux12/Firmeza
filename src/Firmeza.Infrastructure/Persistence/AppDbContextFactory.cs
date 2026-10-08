@@ -8,17 +8,12 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
 {
     public AppDbContext CreateDbContext(string[] args)
     {
-        var connectionString = Environment.GetEnvironmentVariable(
-            "ConnectionStrings__DefaultConnection");
-
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException(
-                "Set ConnectionStrings__DefaultConnection for EF Core design-time commands.");
-        }
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+            ?? "Host=localhost;Port=5432;Database=firmeza;Username=firmeza;Password=coder1234";
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(connectionString)
+            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
             .Options;
 
         return new AppDbContext(options);
