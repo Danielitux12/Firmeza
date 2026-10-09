@@ -1,5 +1,6 @@
 using System.Text;
 using Firmeza.API.Configuration;
+using Firmeza.Application;
 using Firmeza.Application.Mappings;
 using Firmeza.Infrastructure;
 using Firmeza.Infrastructure.Persistence;
@@ -36,6 +37,9 @@ var mapperConfig = new AutoMapper.MapperConfiguration(cfg =>
     cfg.AddProfile<EmpresaMappingProfile>();
 });
 builder.Services.AddSingleton(mapperConfig.CreateMapper());
+
+// Registra los validadores de FluentValidation de Application
+builder.Services.AddApplicationServices();
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {

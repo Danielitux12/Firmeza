@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using FluentValidation;
 using Firmeza.Application.DTOs.Auth;
 using Firmeza.Application.Interfaces;
 using Firmeza.Domain.Entities;
@@ -26,6 +27,8 @@ public class AuthController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly IEmailSender _emailSender;
     private readonly ILogger<AuthController> _logger;
+    private readonly IValidator<LoginRequestDto> _loginValidator;
+    private readonly IValidator<RegisterRequestDto> _registerValidator;
 
     public AuthController(
         UserManager<IdentityUser> userManager,
@@ -33,7 +36,9 @@ public class AuthController : ControllerBase
         AppDbContext context,
         IConfiguration configuration,
         IEmailSender emailSender,
-        ILogger<AuthController> logger)
+        ILogger<AuthController> logger,
+        IValidator<LoginRequestDto> loginValidator,
+        IValidator<RegisterRequestDto> registerValidator)
     {
         _userManager = userManager;
         _roleManager = roleManager;
@@ -41,6 +46,8 @@ public class AuthController : ControllerBase
         _configuration = configuration;
         _emailSender = emailSender;
         _logger = logger;
+        _loginValidator = loginValidator;
+        _registerValidator = registerValidator;
     }
 
     /// <summary>
@@ -48,11 +55,12 @@ public class AuthController : ControllerBase
     /// Envía además un correo electrónico de bienvenida.
     /// </summary>
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
+    public async Task<IActionResult> Register([FromBody] RegisterRequestDto request, CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
+        var validation = await _registerValidator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
         {
-            return BadRequest(ModelState);
+            return Problem(statusCode: 400, title: "Datos inválidos", detail: validation.Errors[0].ErrorMessage);
         }
 
         // Verifica si el correo ya está registrado en Identity o en Clientes
@@ -132,11 +140,12 @@ public class AuthController : ControllerBase
     /// Inicia sesión y genera un token JWT con los roles y reclamos del usuario.
     /// </summary>
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto request, CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
+        var validation = await _loginValidator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
         {
-            return BadRequest(ModelState);
+            return Problem(statusCode: 400, title: "Datos inválidos", detail: validation.Errors[0].ErrorMessage);
         }
 
         var user = await _userManager.FindByEmailAsync(request.Email);

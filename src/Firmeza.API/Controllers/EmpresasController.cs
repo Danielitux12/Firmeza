@@ -1,4 +1,5 @@
 using AutoMapper;
+using FluentValidation;
 using Firmeza.API.Problems;
 using Firmeza.Application.Common;
 using Firmeza.Application.DTOs.Empresas;
@@ -8,7 +9,6 @@ using Firmeza.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Firmeza.Application.Validators;
 
 namespace Firmeza.API.Controllers;
 
@@ -21,17 +21,20 @@ public class EmpresasController : ControllerBase
     private readonly IMapper _mapper;
     private readonly IExcelExporter _excelExporter;
     private readonly IPdfExporter _pdfExporter;
+    private readonly IValidator<SaveEmpresaDto> _validator;
 
     public EmpresasController(
         AppDbContext context,
         IMapper mapper,
         IExcelExporter excelExporter,
-        IPdfExporter pdfExporter)
+        IPdfExporter pdfExporter,
+        IValidator<SaveEmpresaDto> validator)
     {
         _context = context;
         _mapper = mapper;
         _excelExporter = excelExporter;
         _pdfExporter = pdfExporter;
+        _validator = validator;
     }
 
     [HttpGet]
@@ -97,8 +100,7 @@ public class EmpresasController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<EmpresaDto>> Create(SaveEmpresaDto request, CancellationToken cancellationToken)
     {
-        var validator = new EmpresaValidator();
-        var validation = await validator.ValidateAsync(request, cancellationToken);
+        var validation = await _validator.ValidateAsync(request, cancellationToken);
         if (!validation.IsValid)
         {
             return Problem(statusCode: 400, title: "Datos inválidos", detail: validation.Errors[0].ErrorMessage);
@@ -128,8 +130,7 @@ public class EmpresasController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<EmpresaDto>> Update(Guid id, SaveEmpresaDto request, CancellationToken cancellationToken)
     {
-        var validator = new EmpresaValidator();
-        var validation = await validator.ValidateAsync(request, cancellationToken);
+        var validation = await _validator.ValidateAsync(request, cancellationToken);
         if (!validation.IsValid)
         {
             return Problem(statusCode: 400, title: "Datos inválidos", detail: validation.Errors[0].ErrorMessage);
