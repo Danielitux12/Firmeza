@@ -1,4 +1,5 @@
 using Firmeza.Domain.Entities;
+using Firmeza.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,8 @@ public class AppDbContext : IdentityDbContext<IdentityUser>
     {
         base.OnModelCreating(modelBuilder);
 
-        // Aplica CustomerConfiguration y EmpresaConfiguration automáticamente
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        // Mapeo de entidades: primero Clientes y luego Empresas
+        modelBuilder.ApplyConfiguration(new ClienteConfiguration());
+        modelBuilder.ApplyConfiguration(new EmpresaConfiguration());
     }
 }

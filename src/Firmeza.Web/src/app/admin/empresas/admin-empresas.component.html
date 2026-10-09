@@ -1,0 +1,284 @@
+<app-navbar></app-navbar>
+
+<div class="container-fluid px-lg-5 py-4">
+  <!-- Encabezado de Gestión de Empresas -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom border-card gap-3">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="badge" style="background: var(--info-soft); color: var(--info-light); border: 1px solid rgba(56, 189, 248, 0.3);">
+          <i class="bi bi-buildings-fill me-1"></i> Directorio Empresarial
+        </span>
+        <span class="text-muted small">&bull; Proveedores &amp; Aliados</span>
+      </div>
+      <h2 class="h3 fw-bold mb-0 text-light">Gestión de Empresas</h2>
+      <p class="text-muted small mb-0 mt-1">Directorio unificado de personas jurídicas, control de NITs y estado de convenios</p>
+    </div>
+    
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <button (click)="downloadExcel()" class="btn btn-outline-success btn-sm shadow-sm" title="Descargar reporte en formato Excel">
+        <i class="bi bi-file-earmark-excel-fill me-1"></i> Exportar Excel
+      </button>
+      <button (click)="downloadPdf()" class="btn btn-outline-danger btn-sm shadow-sm" title="Descargar reporte en formato PDF">
+        <i class="bi bi-file-earmark-pdf-fill me-1"></i> Exportar PDF
+      </button>
+      <button (click)="openCreateModal()" class="btn btn-primary btn-sm shadow-sm">
+        <i class="bi bi-building-add me-1"></i> Nueva Empresa
+      </button>
+    </div>
+  </div>
+
+  <!-- Alertas de Página -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-check-circle-fill fs-5"></i>
+    <div class="flex-grow-1">{{ successMessage }}</div>
+    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+  </div>
+  
+  <div *ngIf="errorMessage && !showModal" class="alert alert-danger alert-dismissible fade show shadow-sm d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+    <div class="flex-grow-1">{{ errorMessage }}</div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+  </div>
+
+  <!-- Filtros y Búsqueda -->
+  <div class="card mb-4">
+    <div class="card-body py-3 px-4">
+      <div class="row g-3 align-items-center">
+        <!-- Barra de Búsqueda -->
+        <div class="col-md-7 col-lg-6">
+          <div class="input-group">
+            <span class="input-group-text border-end-0"><i class="bi bi-search"></i></span>
+            <input
+              type="text"
+              class="form-control border-start-0 ps-0"
+              placeholder="Buscar por razón social, NIT o correo corporativo..."
+              [(ngModel)]="search"
+              (keyup.enter)="onSearch()">
+            <button class="btn btn-primary btn-sm px-3" type="button" (click)="onSearch()">
+              Buscar
+            </button>
+          </div>
+        </div>
+
+        <!-- Contador Total -->
+        <div class="col-md-5 col-lg-6 text-md-end">
+          <span class="text-secondary small fw-medium">
+            Total empresas registradas: <strong class="text-primary-light fs-6">{{ totalCount }}</strong>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Empresas -->
+  <div class="card mb-4 overflow-hidden">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th style="min-width: 220px;">Razón Social</th>
+            <th>NIT / Identificación Fiscal</th>
+            <th>Correo Electrónico</th>
+            <th>Teléfono</th>
+            <th>Dirección Principal</th>
+            <th class="text-end" style="min-width: 110px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Spinner de Carga -->
+          <tr *ngIf="isLoading">
+            <td colspan="6" class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+              <span>Consultando directorio de empresas...</span>
+            </td>
+          </tr>
+
+          <!-- Estado Vacío -->
+          <tr *ngIf="!isLoading && empresas.length === 0">
+            <td colspan="6" class="text-center py-5 text-muted">
+              <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                   style="width: 56px; height: 56px; background: var(--surface-2); border: 1px solid var(--border-card);">
+                <i class="bi bi-building-slash fs-3 text-muted"></i>
+              </div>
+              <p class="mb-0 fw-medium">No se encontraron empresas registradas con el criterio de búsqueda.</p>
+              <small class="text-muted">Prueba cambiando el término de búsqueda o registra una nueva empresa proveedora.</small>
+            </td>
+          </tr>
+
+          <!-- Filas de Empresas -->
+          <tr *ngFor="let empresa of empresas">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="avatar-chip" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(14, 116, 144, 0.1) 100%); color: var(--info-light); border-color: rgba(56, 189, 248, 0.3);">
+                  {{ empresa.name.slice(0, 2).toUpperCase() }}
+                </div>
+                <div>
+                  <div class="fw-semibold text-light">{{ empresa.name }}</div>
+                  <small class="text-muted d-block" style="font-size: 0.78rem;">ID: {{ empresa.id?.slice(0, 8) }}...</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <code>{{ empresa.nit }}</code>
+            </td>
+            <td>
+              <span class="text-secondary">{{ empresa.email }}</span>
+            </td>
+            <td>
+              <span class="text-light">{{ empresa.phone || '-' }}</span>
+            </td>
+            <td>
+              <span class="text-secondary small" style="max-width: 200px; display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="empresa.address || ''">
+                {{ empresa.address || '-' }}
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="btn-group btn-group-sm">
+                <button
+                  (click)="openEditModal(empresa)"
+                  class="btn btn-outline-primary"
+                  title="Editar datos de la empresa">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button
+                  (click)="deleteEmpresa(empresa)"
+                  class="btn btn-outline-danger"
+                  title="Eliminar empresa permanentemente">
+                  <i class="bi bi-trash3-fill"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div *ngIf="totalPages > 1" class="card-footer d-flex justify-content-between align-items-center py-3">
+      <small class="text-muted">
+        Mostrando página <strong class="text-light">{{ page }}</strong> de <strong class="text-light">{{ totalPages }}</strong>
+      </small>
+      <div class="btn-group btn-group-sm">
+        <button class="btn btn-outline-secondary" [disabled]="page <= 1" (click)="changePage(page - 1)">
+          <i class="bi bi-chevron-left me-1"></i> Anterior
+        </button>
+        <button class="btn btn-outline-secondary" [disabled]="page >= totalPages" (click)="changePage(page + 1)">
+          Siguiente <i class="bi bi-chevron-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Registro / Edición de Empresa -->
+<div *ngIf="showModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(7, 7, 13, 0.82); backdrop-filter: blur(8px);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold text-light d-flex align-items-center gap-2">
+          <i class="bi" [ngClass]="isEditing ? 'bi-pencil-square text-primary-light' : 'bi-building-add text-primary-light'"></i>
+          <span>{{ modalTitle }}</span>
+        </h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- Error dentro del modal -->
+        <div *ngIf="modalErrorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2" role="alert">
+          <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+          <div>{{ modalErrorMessage }}</div>
+        </div>
+
+        <form (ngSubmit)="saveEmpresa()" novalidate>
+          <!-- Razón Social -->
+          <div class="mb-3">
+            <label class="form-label">Razón Social / Nombre Comercial <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              [class.is-invalid]="nameError"
+              [(ngModel)]="currentEmpresa.name"
+              name="name"
+              (input)="nameError = ''; modalErrorMessage = ''"
+              placeholder="Ej. Distribuidora del Norte S.A.S">
+            <div *ngIf="nameError" class="text-danger small mt-1 d-flex align-items-center gap-1">
+              <i class="bi bi-exclamation-circle"></i> {{ nameError }}
+            </div>
+          </div>
+
+          <!-- NIT / Identificación Fiscal -->
+          <div class="mb-3">
+            <label class="form-label">NIT / Identificación Fiscal <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control font-monospace"
+              [class.is-invalid]="nitError"
+              [(ngModel)]="currentEmpresa.nit"
+              name="nit"
+              (input)="nitError = ''; modalErrorMessage = ''"
+              placeholder="Ej. 900123456-1">
+            <div *ngIf="nitError" class="text-danger small mt-1 d-flex align-items-center gap-1">
+              <i class="bi bi-exclamation-circle"></i> {{ nitError }}
+            </div>
+          </div>
+
+          <!-- Correo Corporativo -->
+          <div class="mb-3">
+            <label class="form-label">Correo Electrónico Corporativo <span class="text-danger">*</span></label>
+            <input
+              type="email"
+              class="form-control"
+              [class.is-invalid]="emailError"
+              [(ngModel)]="currentEmpresa.email"
+              name="email"
+              (input)="emailError = ''; modalErrorMessage = ''"
+              placeholder="contacto@empresa.com">
+            <div *ngIf="emailError" class="text-danger small mt-1 d-flex align-items-center gap-1">
+              <i class="bi bi-exclamation-circle"></i> {{ emailError }}
+            </div>
+          </div>
+
+          <!-- Teléfono de Contacto -->
+          <div class="mb-3">
+            <label class="form-label">Teléfono de Contacto <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              [class.is-invalid]="phoneError"
+              [(ngModel)]="currentEmpresa.phone"
+              name="phone"
+              (input)="phoneError = ''; modalErrorMessage = ''"
+              placeholder="Ej. +57 601 234 5678">
+            <div *ngIf="phoneError" class="text-danger small mt-1 d-flex align-items-center gap-1">
+              <i class="bi bi-exclamation-circle"></i> {{ phoneError }}
+            </div>
+          </div>
+
+          <!-- Dirección Principal -->
+          <div class="mb-4">
+            <label class="form-label">Dirección Principal <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              [class.is-invalid]="addressError"
+              [(ngModel)]="currentEmpresa.address"
+              name="address"
+              (input)="addressError = ''; modalErrorMessage = ''"
+              placeholder="Ej. Carrera 7 # 100 - 20">
+            <div *ngIf="addressError" class="text-danger small mt-1 d-flex align-items-center gap-1">
+              <i class="bi bi-exclamation-circle"></i> {{ addressError }}
+            </div>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top border-card">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-sm px-3 shadow-sm" [disabled]="isSaving">
+              <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+              <span>{{ isEditing ? 'Guardar Cambios' : 'Registrar Empresa' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

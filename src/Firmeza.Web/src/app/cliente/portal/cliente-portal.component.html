@@ -1,0 +1,139 @@
+<app-navbar></app-navbar>
+
+<div class="container-fluid px-lg-5 py-4">
+  <div class="row justify-content-center">
+    <div class="col-xl-10">
+
+      <!-- Encabezado de Bienvenida con degradado -->
+      <div class="card mb-4 position-relative overflow-hidden" style="background: linear-gradient(145deg, #181432 0%, #0D0A1C 100%);">
+        <div class="card-body p-4 p-md-5">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+              <span class="badge mb-2 bg-primary">
+                <i class="bi bi-person-workspace me-1"></i> Portal Exclusivo de Cliente
+              </span>
+              <h2 class="display-6 fw-bold text-light mb-1">
+                Bienvenido, {{ profile?.cliente?.name || userEmail }}
+              </h2>
+              <p class="text-secondary mb-0">
+                Consulta los detalles de tu cuenta y el estado de tus servicios en Firmeza.
+              </p>
+            </div>
+            <div>
+              <span class="badge fs-6 px-3 py-2" [ngClass]="profile?.cliente?.isActive ? 'bg-success' : 'bg-danger'">
+                <span *ngIf="profile?.cliente?.isActive" class="pulse-dot me-1"></span>
+                <i *ngIf="!profile?.cliente?.isActive" class="bi bi-exclamation-octagon-fill me-1"></i>
+                {{ profile?.cliente?.isActive ? 'Cuenta Activa' : 'Cuenta Suspendida' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alerta si hay error -->
+      <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <div>{{ errorMessage }}</div>
+      </div>
+
+      <div *ngIf="isLoading" class="text-center py-5 text-muted">
+        <div class="spinner-border text-primary me-2" role="status"></div>
+        <span>Cargando tus datos de cliente...</span>
+      </div>
+
+      <!-- Contenido del Portal -->
+      <div *ngIf="!isLoading" class="row g-4">
+        <!-- Tarjeta de Información Personal -->
+        <div class="col-md-7">
+          <div class="card h-100">
+            <div class="card-header py-3 d-flex align-items-center gap-2">
+              <i class="bi bi-person-lines-fill text-primary-light fs-5"></i>
+              <h5 class="card-title mb-0 fw-bold text-light">Información Personal Registrada</h5>
+            </div>
+            <div class="card-body p-4">
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Nombre Completo</div>
+                  <div class="fw-semibold text-light mt-1">{{ profile?.cliente?.name || 'No especificado' }}</div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Documento / Cédula</div>
+                  <div class="mt-1">
+                    <code>{{ profile?.cliente?.documentNumber || 'No registrado' }}</code>
+                  </div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Correo Electrónico</div>
+                  <div class="text-secondary mt-1">{{ profile?.cliente?.email || userEmail }}</div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Teléfono de Contacto</div>
+                  <div class="text-light mt-1">{{ profile?.cliente?.phone || 'No registrado' }}</div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Edad</div>
+                  <div class="text-light mt-1">
+                    <span class="badge" style="background: var(--surface-3); color: var(--text-primary); border: 1px solid var(--border-card);">
+                      {{ profile?.cliente?.age ? profile?.cliente?.age + ' años' : 'No registrada' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Dirección de Domicilio</div>
+                  <div class="text-secondary mt-1">{{ profile?.cliente?.address || 'No registrada' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta de Soporte y Seguridad -->
+        <div class="col-md-5">
+          <div class="card h-100">
+            <div class="card-header py-3 d-flex align-items-center gap-2">
+              <i class="bi bi-shield-check text-primary-light fs-5"></i>
+              <h5 class="card-title mb-0 fw-bold text-light">Seguridad &amp; Privacidad</h5>
+            </div>
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+              <div>
+                <ul class="list-unstyled mb-4">
+                  <li class="d-flex align-items-start gap-3 mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                         style="width: 34px; height: 34px; background: var(--primary-soft); color: var(--primary-light);">
+                      <i class="bi bi-lock-fill small"></i>
+                    </div>
+                    <div>
+                      <strong class="text-light">Sesión Autenticada JWT</strong>
+                      <p class="text-secondary small mb-0">Tus solicitudes se firman criptográficamente con tokens seguros de corta duración.</p>
+                    </div>
+                  </li>
+                  <li class="d-flex align-items-start gap-3 mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                         style="width: 34px; height: 34px; background: var(--info-soft); color: var(--info-light);">
+                      <i class="bi bi-person-badge-fill small"></i>
+                    </div>
+                    <div>
+                      <strong class="text-light">Nivel de Acceso</strong>
+                      <p class="text-secondary small mb-0">Cuenta autorizada bajo la directiva <code>SoloCliente</code>.</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="p-3 rounded-3 border-card small text-muted" style="background: var(--surface-1); border: 1px solid var(--border-card);">
+                <i class="bi bi-info-circle text-primary-light me-1"></i>
+                Para solicitar una actualización de tus datos personales, por favor contacta al administrador de la plataforma.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

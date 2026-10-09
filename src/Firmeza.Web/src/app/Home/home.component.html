@@ -1,0 +1,126 @@
+<div class="home-page d-flex flex-column min-vh-100" style="background: var(--bg-main);">
+  <app-navbar></app-navbar>
+
+  <!-- Hero Section -->
+  <section class="position-relative overflow-hidden py-5 py-lg-6" style="border-bottom: 1px solid var(--border-card); background: radial-gradient(circle at 50% 10%, rgba(139, 92, 246, 0.18) 0%, rgba(7, 7, 13, 0.95) 75%);">
+    <div class="container py-lg-4 position-relative" style="z-index: 2;">
+      <div class="row justify-content-center text-center">
+        <div class="col-lg-9 col-xl-8">
+          <!-- Badge -->
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill mb-4 shadow-sm"
+               style="background: var(--primary-soft); border: 1px solid rgba(139, 92, 246, 0.35); color: var(--primary-light); font-size: 0.85rem; font-weight: 600;">
+            <i class="bi bi-shield-lock-fill"></i>
+            <span>Plataforma Corporativa &bull; .NET 10 &amp; Angular 19</span>
+          </div>
+
+          <!-- Headline -->
+          <h1 class="display-4 fw-bold mb-3" style="letter-spacing: -0.035em; line-height: 1.15;">
+            Gestión Integral de Clientes y Empresas con <span style="background: linear-gradient(135deg, #FFFFFF 20%, #C4B5FD 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Firmeza</span>
+          </h1>
+
+          <!-- Subtitle -->
+          <p class="lead text-secondary mb-4 mx-auto" style="max-width: 640px; font-size: 1.15rem; line-height: 1.6;">
+            {{ subtitle() }}
+          </p>
+
+          <!-- Action Buttons -->
+          <div class="d-flex justify-content-center gap-3 flex-wrap mb-5">
+            <a *ngIf="!currentUser" routerLink="/Login" class="btn btn-primary px-4 py-3 fs-6 shadow">
+              <i class="bi bi-person-fill me-1"></i> Iniciar Sesión en la Plataforma
+            </a>
+            <a *ngIf="isAdmin" routerLink="/admin" class="btn btn-primary px-4 py-3 fs-6 shadow">
+              <i class="bi bi-speedometer2 me-1"></i> Ir al Panel de Administración
+            </a>
+            <a *ngIf="isCliente" routerLink="/cliente" class="btn btn-primary px-4 py-3 fs-6 shadow">
+              <i class="bi bi-person-badge me-1"></i> Acceder a Mi Portal
+            </a>
+            <a href="#features" class="btn btn-outline-secondary px-4 py-3 fs-6">
+              <i class="bi bi-arrow-down-circle me-1"></i> Conocer Características
+            </a>
+          </div>
+
+          <!-- Feature Pills -->
+          <div class="d-flex justify-content-center align-items-center gap-3 gap-md-4 flex-wrap text-muted small">
+            <span class="d-flex align-items-center gap-1">
+              <i class="bi bi-check-circle-fill text-success"></i> Autenticación JWT Bearer
+            </span>
+            <span class="d-flex align-items-center gap-1">
+              <i class="bi bi-check-circle-fill text-success"></i> PostgreSQL 16
+            </span>
+            <span class="d-flex align-items-center gap-1">
+              <i class="bi bi-check-circle-fill text-success"></i> Exportaciones Excel &amp; PDF
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-5 py-lg-6 flex-grow-1" id="features" style="background: var(--bg-main);">
+    <div class="container">
+      <div class="text-center mb-5">
+        <span class="badge bg-primary mb-2">Capacidades Empresariales</span>
+        <h2 class="h2 fw-bold text-light">Diseñado para Operaciones de Alta Calidad</h2>
+        <p class="text-muted small">Todo lo que necesitas para centralizar y auditar clientes y aliados estratégicos</p>
+      </div>
+
+      <div class="row g-4">
+        <!-- Feature 1 -->
+        <div class="col-md-4">
+          <div class="card h-100 p-4">
+            <div class="d-flex align-items-center justify-content-center rounded-3 mb-4"
+                 style="width: 52px; height: 52px; background: var(--primary-soft); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary-light); font-size: 1.5rem;">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <h4 class="h5 fw-bold text-light mb-2">Seguridad de Nivel Empresarial</h4>
+            <p class="text-secondary small mb-0 leading-relaxed">
+              Autenticación JWT con rotación segura, políticas de autorización estrictas por roles y protección contra inyecciones y duplicados.
+            </p>
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="col-md-4">
+          <div class="card h-100 p-4">
+            <div class="d-flex align-items-center justify-content-center rounded-3 mb-4"
+                 style="width: 52px; height: 52px; background: var(--success-soft); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success-light); font-size: 1.5rem;">
+              <i class="bi bi-lightning-charge-fill"></i>
+            </div>
+            <h4 class="h5 fw-bold text-light mb-2">Rendimiento Inmediato</h4>
+            <p class="text-secondary small mb-0 leading-relaxed">
+              Conexiones optimizadas a PostgreSQL con pool precalentado y arquitectura SPA en Angular para respuestas en milisegundos.
+            </p>
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="col-md-4">
+          <div class="card h-100 p-4">
+            <div class="d-flex align-items-center justify-content-center rounded-3 mb-4"
+                 style="width: 52px; height: 52px; background: var(--info-soft); border: 1px solid rgba(56, 189, 248, 0.3); color: var(--info-light); font-size: 1.5rem;">
+              <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+            </div>
+            <h4 class="h5 fw-bold text-light mb-2">Reportes y Exportación</h4>
+            <p class="text-secondary small mb-0 leading-relaxed">
+              Generación de informes estructurados en formatos Excel OpenXML y documentos PDF con diseño institucional al instante.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-4 border-top border-card text-center text-muted small" style="background: var(--surface-1);">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-shield-lock-fill text-primary-light"></i>
+        <strong class="text-light">Firmeza</strong> &bull; Sistema de Gestión Integral
+      </div>
+      <div>
+        &copy; 2026 Firmeza Store. Todos los derechos reservados.
+      </div>
+    </div>
+  </footer>
+</div>

@@ -10,5 +10,6 @@ public class ClienteDto
     public int Age { get; set; }
     public string Address { get; set; } = string.Empty;
     public string? UserId { get; set; }
+    public string Role { get; set; } = "Cliente";
     public bool IsActive { get; set; }
 }

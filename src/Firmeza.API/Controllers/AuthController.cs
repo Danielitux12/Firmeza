@@ -153,19 +153,21 @@ public class AuthController : ControllerBase
         var roles = await _userManager.GetRolesAsync(user);
         var primaryRole = roles.FirstOrDefault() ?? "Cliente";
 
-        // Obtener el ClienteId asociado si existe
-        var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.UserId == user.Id || c.Email == user.Email);
-        if (primaryRole == "Cliente" && (cliente is null || !cliente.IsActive))
+        var clienteIdStr = string.Empty;
+        if (primaryRole == "Cliente")
         {
-            return Unauthorized(new ProblemDetails
+            var cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == user.Id || c.Email == user.Email);
+            if (cliente is null || !cliente.IsActive)
             {
-                Status = StatusCodes.Status401Unauthorized,
-                Title = "Cuenta suspendida",
-                Detail = "La cuenta de cliente no existe o está suspendida."
-            });
+                return Unauthorized(new ProblemDetails
+                {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Cuenta suspendida",
+                    Detail = "La cuenta de cliente no existe o está suspendida."
+                });
+            }
+            clienteIdStr = cliente.Id.ToString();
         }
-
-        var clienteIdStr = cliente != null ? cliente.Id.ToString() : string.Empty;
 
         // Construir reclamos (Claims) del JWT
         var claims = new List<Claim>
@@ -212,6 +214,53 @@ public class AuthController : ControllerBase
             Email = user.Email ?? string.Empty,
             Role = primaryRole,
             Expiration = expires
+        });
+    }
+
+    /// <summary>
+    /// Retorna los datos de perfil del usuario autenticado actualmente.
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMe()
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        var role = User.FindFirstValue(ClaimTypes.Role) ?? "Cliente";
+
+        if (string.IsNullOrEmpty(email))
+        {
+            return Unauthorized();
+        }
+
+        Cliente? cliente = null;
+        if (role == "Cliente")
+        {
+            var clienteIdStr = User.FindFirst("ClienteId")?.Value;
+            if (Guid.TryParse(clienteIdStr, out var cId))
+            {
+                cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.Id == cId);
+            }
+            else
+            {
+                cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.Email == email);
+            }
+        }
+
+        return Ok(new
+        {
+            Email = email,
+            Role = role,
+            Cliente = cliente != null ? new
+            {
+                Id = cliente.Id,
+                Name = cliente.Name,
+                DocumentNumber = cliente.DocumentNumber,
+                Email = cliente.Email,
+                Phone = cliente.Phone,
+                Address = cliente.Address,
+                IsActive = cliente.IsActive,
+                Age = cliente.BirthDate.HasValue ? DateTime.UtcNow.Year - cliente.BirthDate.Value.Year : 0
+            } : null
         });
     }
 }

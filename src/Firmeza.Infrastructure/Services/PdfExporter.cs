@@ -30,6 +30,7 @@ public class PdfExporter : IPdfExporter
                         columns.RelativeColumn(2);
                         columns.RelativeColumn(3);
                         columns.RelativeColumn(2);
+                        columns.RelativeColumn(2);
                     });
 
                     table.Header(header =>
@@ -38,6 +39,7 @@ public class PdfExporter : IPdfExporter
                         header.Cell().Text("Documento").Bold();
                         header.Cell().Text("Email").Bold();
                         header.Cell().Text("Teléfono").Bold();
+                        header.Cell().Text("Rol").Bold();
                     });
 
                     foreach (var c in clientes)
@@ -46,6 +48,7 @@ public class PdfExporter : IPdfExporter
                         table.Cell().Text(c.DocumentNumber);
                         table.Cell().Text(c.Email);
                         table.Cell().Text(c.Phone);
+                        table.Cell().Text(c.Role);
                     }
                 });
             });

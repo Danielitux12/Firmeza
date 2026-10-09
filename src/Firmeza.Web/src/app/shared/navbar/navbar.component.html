@@ -1,0 +1,71 @@
+<nav class="navbar navbar-expand-lg navbar-dark navbar-firmeza px-3 py-2">
+  <div class="container-fluid">
+    <a class="navbar-brand brand-title d-flex align-items-center gap-2" routerLink="/">
+      <i class="bi bi-shield-lock-fill brand-icon fs-4"></i>
+      <span>Firmeza</span>
+    </a>
+
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <i class="bi bi-house-door me-1"></i>Inicio
+          </a>
+        </li>
+
+        <!-- Enlaces exclusivos de Administrador -->
+        <ng-container *ngIf="isAdmin">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+              <i class="bi bi-speedometer2 me-1"></i>Dashboard Admin
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/clientes" routerLinkActive="active">
+              <i class="bi bi-people me-1"></i>Clientes
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/empresas" routerLinkActive="active">
+              <i class="bi bi-building me-1"></i>Empresas
+            </a>
+          </li>
+        </ng-container>
+
+        <!-- Enlace exclusivo de Cliente -->
+        <ng-container *ngIf="isCliente">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/cliente" routerLinkActive="active">
+              <i class="bi bi-person-badge me-1"></i>Mi Portal
+            </a>
+          </li>
+        </ng-container>
+      </ul>
+
+      <div class="d-flex align-items-center gap-3">
+        <div *ngIf="currentUser; else notLoggedIn" class="d-flex align-items-center gap-3">
+          <div class="text-end d-none d-sm-block">
+            <div class="small fw-medium text-light">{{ currentUser.email }}</div>
+            <span class="badge" [ngClass]="currentUser.role === 'Administrador' ? 'badge-role-admin' : 'badge-role-client'">
+              {{ currentUser.role }}
+            </span>
+          </div>
+          <button (click)="logout()" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Salir</span>
+          </button>
+        </div>
+
+        <ng-template #notLoggedIn>
+          <a routerLink="/Login" class="btn btn-primary btn-sm px-3 fw-semibold">
+            <i class="bi bi-person-fill me-1"></i> Iniciar Sesión
+          </a>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</nav>

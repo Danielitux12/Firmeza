@@ -9,7 +9,7 @@ public class ExcelExporter : IExcelExporter
 {
     public ExcelExporter()
     {
-        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        ExcelPackage.License.SetNonCommercialPersonal("Firmeza");
     }
 
     public byte[] ExportClientes(IEnumerable<ClienteDto> clientes)
@@ -24,6 +24,7 @@ public class ExcelExporter : IExcelExporter
         worksheet.Cells[1, 5].Value = "Teléfono";
         worksheet.Cells[1, 6].Value = "Edad";
         worksheet.Cells[1, 7].Value = "Dirección";
+        worksheet.Cells[1, 8].Value = "Rol";
 
         int row = 2;
         foreach (var c in clientes)
@@ -35,6 +36,7 @@ public class ExcelExporter : IExcelExporter
             worksheet.Cells[row, 5].Value = c.Phone;
             worksheet.Cells[row, 6].Value = c.Age;
             worksheet.Cells[row, 7].Value = c.Address;
+            worksheet.Cells[row, 8].Value = c.Role;
             row++;
         }
 

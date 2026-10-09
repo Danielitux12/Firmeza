@@ -1,12 +1,12 @@
 services:
-  admin:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
-    image: firmeza-admin
-    container_name: firmeza-admin
+    image: firmeza-api
+    container_name: firmeza-api
     ports:
-      - "8085:8080"
+      - "5246:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=firmeza;Username=firmeza;Password=coder1234"
@@ -14,8 +14,6 @@ services:
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-Admin123*}"
       CLIENT_EMAIL: "${CLIENT_EMAIL:-cliente@firmeza.com}"
       CLIENT_PASSWORD: "${CLIENT_PASSWORD:-Cliente123*}"
-      Admin__Email: "${ADMIN_EMAIL:-admin@firmeza.com}"
-      Admin__Password: "${ADMIN_PASSWORD:-Admin123*}"
       Auth__AdminUser: "${ADMIN_EMAIL:-admin@firmeza.com}"
       Auth__AdminPassword: "${ADMIN_PASSWORD:-Admin123*}"
       Auth__ClientUser: "${CLIENT_EMAIL:-cliente@firmeza.com}"
@@ -28,12 +26,12 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  client:
+  web:
     build:
-      context: src/Firmeza.Client
+      context: src/Firmeza.Web
       dockerfile: Dockerfile
-    image: firmeza-client
-    container_name: firmeza-client
+    image: firmeza-web
+    container_name: firmeza-web
     ports:
       - "4200:80"
     environment:

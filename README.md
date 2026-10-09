@@ -1,8 +1,8 @@
 # Firmeza - Sistema de Gestión de Clientes y Empresas
 
-Proyecto desarrollado en **ASP.NET Core (.NET 10)** y **Angular**, diseñado siguiendo una arquitectura limpia en capas, enfocada en simplicidad, legibilidad y libre de sobreingeniería.
+Plataforma empresarial desarrollada en **ASP.NET Core (.NET 10)** y **Angular (SPA Standalone)**, diseñada siguiendo los principios de arquitectura limpia en capas, orientada a la robustez, alta cohesión, bajo acoplamiento y libre de sobreingeniería.
 
-El núcleo del sistema gestiona el ciclo de vida completo y la administración de **Clientes** y **Empresas** (proveedores y aliados comerciales).
+Tanto el panel de **Administrador** como el portal de **Cliente** están unificados en una sola aplicación web SPA moderna y responsiva en **Angular** (`Firmeza.Web`), comunicándose mediante una **Web API RESTful** con autenticación JWT Bearer y persistencia en **PostgreSQL**.
 
 ---
 
@@ -11,18 +11,21 @@ El núcleo del sistema gestiona el ciclo de vida completo y la administración d
 ```text
 Firmeza/
 ├─ src/
-│  ├─ Firmeza.Domain/          # Entidades centrales y reglas puras de dominio
-│  ├─ Firmeza.Application/     # DTOs, ViewModels, servicios, validadores y mapeos
-│  ├─ Firmeza.Infrastructure/  # AppDbContext (Identity + Npgsql), repositorio genérico y servicios (Excel, PDF, SMTP)
-│  ├─ Firmeza.Admin/           # Panel web MVC (Razor Views + Bootstrap 5) para Administradores
-│  ├─ Firmeza.API/             # Web API REST (JWT, Swagger interactivo, AutoMapper)
-│  └─ Firmeza.Client/          # SPA en Angular (interfaz de usuario)
+│  ├─ Firmeza.Domain/          # Entidades centrales y reglas de negocio puras (Cliente, Empresa, EntityBase)
+│  ├─ Firmeza.Application/     # DTOs, interfaces de servicio, validadores FluentValidation y perfiles AutoMapper
+│  ├─ Firmeza.Infrastructure/  # AppDbContext (Npgsql + Identity), configuraciones de entidad, repositorios y exportadores (Excel, PDF, SMTP)
+│  ├─ Firmeza.API/             # Web API RESTful (JWT Bearer, Swagger interactivo, Controllers)
+│  └─ Firmeza.Web/             # Frontend SPA en Angular (Componentes Standalone, tema oscuro premium, Guards, Interceptors)
 ├─ tests/
-│  └─ Firmeza.Tests/           # Pruebas unitarias xUnit (AutoMapper, validaciones FluentValidation)
+│  └─ Firmeza.Tests/           # Suite de pruebas unitarias xUnit (AutoMapper, FluentValidation)
 ├─ .env.example                # Plantilla de variables de entorno (Base de datos, JWT, SMTP)
-├─ .env                        # Variables locales (ignorado por Git)
+├─ .env                        # Variables locales de entorno (ignorado por Git)
 ├─ FirmezaSolution.sln         # Solución principal en .NET 10
-└─ README.md                   # Documentación técnica del proyecto
+├─ Dockerfile                  # Empaquetado Docker para Firmeza.API
+├─ docker-compose.yml          # Orquestación de contenedores (PostgreSQL, Firmeza.API y Firmeza.Web)
+├─ start-web.sh                # Script optimizado para ejecutar Angular con Node.js v22+
+├─ start-client.sh             # Script de compatibilidad para el frontend
+└─ README.md                   # Documentación técnica completa del proyecto
 ```
 
 ---
@@ -30,202 +33,129 @@ Firmeza/
 ## 📦 Capas y Responsabilidades
 
 ### 1. `Firmeza.Domain`
-- **Responsabilidad:** Define las entidades esenciales del modelo de negocio, totalmente agnósticas a frameworks de persistencia o capas superiores.
+- **Responsabilidad:** Define las entidades centrales del modelo de negocio, independientes de frameworks de persistencia.
 - **Entidades:**
-  - `EntityBase`: Clase base con identificador único `Guid Id` y estado lógico `bool IsActive` con métodos `Activate()` y `Deactivate()`.
-  - `Cliente`: Representa un cliente del sistema (`Name`, `DocumentNumber`, `Email`, `Phone`, `Address`, `BirthDate`, `UserId`).
-  - `Empresa`: Representa una empresa o aliado comercial (`Name`, `Nit`, `Email`, `Phone`, `Address`).
+  - `EntityBase`: Clase abstracta base con clave primaria `Guid Id` y estado lógico `bool IsActive` con métodos de encapsulamiento `Activate()` y `Deactivate()`.
+  - `Cliente`: Entidad para los clientes del sistema (`Name`, `DocumentNumber`, `Email`, `Phone`, `Address`, `BirthDate`, `UserId`).
+  - `Empresa`: Entidad para aliados y empresas comerciales (`Name`, `Nit`, `Email`, `Phone`, `Address`).
 
 ---
 
 ### 2. `Firmeza.Application`
-- **Responsabilidad:** Orquesta la lógica de negocio, casos de uso, validaciones y transformaciones de datos.
+- **Responsabilidad:** Casos de uso, validaciones y transformaciones de datos.
 - **Componentes clave:**
-  - **Servicios:**
-    - `IClienteService` / `ClienteService`: Operaciones completas de consulta y mutación para clientes.
-    - `IEmpresaService` / `EmpresaService`: Operaciones completas de consulta y mutación para empresas.
-  - **Validaciones:**
-    - `ClienteValidator`: Reglas de validación declarativas con **FluentValidation** para creación/actualización de clientes.
-    - `EmpresaValidator`: Validación declarativa de empresas (NIT, razón social, correo, etc.).
-  - **Modelos:**
-    - **DTOs:** `ClienteDto`, `SaveClienteDto`, `EmpresaDto`, `SaveEmpresaDto`, `LoginRequestDto`, `RegisterRequestDto`, `AuthResponseDto`.
-    - **ViewModels:** Modelos de vista para MVC (`ClienteViewModel`, `ClienteFilterViewModel`, `EmpresaViewModel`, `EmpresaFilterViewModel`, `DashboardViewModel`, `LoginViewModel`).
-  - **Mapeos:**
-    - `ClienteMappingProfile` y `EmpresaMappingProfile` mediante **AutoMapper**.
-  - **Contratos utilitarios:**
-    - `IExcelExporter`: Exportación estructurada a formato `.xlsx` con EPPlus.
-    - `IPdfExporter`: Exportación de reportes tabulares a PDF con QuestPDF.
-    - `IEmailSender`: Envío desacoplado de correos electrónicos con soporte para adjuntos.
-    - `IRepository<T>`: Contrato genérico de persistencia.
+  - **Servicios:** `IClienteService`, `IEmpresaService`.
+  - **Validadores:** `ClienteValidator` y `EmpresaValidator` construidos con **FluentValidation**.
+  - **DTOs:** `ClienteDto`, `SaveClienteDto`, `EmpresaDto`, `SaveEmpresaDto`, `LoginRequestDto`, `AuthResponseDto`.
+  - **Exportadores:** `IExcelExporter`, `IPdfExporter` e `IEmailSender`.
+  - **Mapeos de Entidades:** Perfiles de **AutoMapper** ordenados primero con `ClienteMappingProfile` y posteriormente `EmpresaMappingProfile`.
 
 ---
 
 ### 3. `Firmeza.Infrastructure`
-- **Responsabilidad:** Acceso a datos, persistencia e integraciones técnicas externas.
-- **Componentes:**
-  - `AppDbContext`: Hereda de `IdentityDbContext<IdentityUser>` para soporte de autenticación y roles con PostgreSQL (`Npgsql.EntityFrameworkCore.PostgreSQL`).
-  - `Repository<T>`: Implementación concreta y genérica del patrón repositorio.
-  - `ExcelExporter`: Generación de hojas de cálculo con EPPlus.
-  - `PdfExporter`: Generación de documentos PDF con QuestPDF.
-  - `SmtpEmailSender`: Envío de correos electrónicos vía protocolo SMTP.
+- **Responsabilidad:** Persistencia en PostgreSQL mediante EF Core, seguridad con ASP.NET Core Identity y servicios técnicos.
+- **Mapeo y Configuraciones de Entidades:**
+  - Las configuraciones de base de datos (`ClienteConfiguration` y `EmpresaConfiguration`) se aplican explícitamente en el orden solicitado (**primero Clientes y luego Empresas**):
+    - `ClienteConfiguration`: Mapea a la tabla `clientes`, define longitud de campos, clave primaria y restricciones de unicidad en `DocumentNumber` y `Email`.
+    - `EmpresaConfiguration`: Mapea a la tabla `empresas`, define longitud de campos, clave primaria y restricciones de unicidad en `Nit` y `Email`.
+- **Migraciones EF Core:**
+  - Historial de migraciones ordenado y sincronizado con el modelo en `AppDbContextModelSnapshot.cs`.
+  - Migración automática al iniciar la API (`DatabaseSeeder.SeedAsync`) para garantizar que la base de datos esté lista sin intervención manual.
+- **Servicios Técnicos:**
+  - `ExcelExporter`: Generación de hojas `.xlsx` estilizadas mediante **EPPlus**.
+  - `PdfExporter`: Generación de documentos PDF tabulares con cabeceras y paginación mediante **QuestPDF**.
+  - `SmtpEmailSender`: Envío desacoplado de notificaciones por correo vía SMTP.
 
 ---
 
-### 4. `Firmeza.Admin` (Panel Web MVC)
-- **Tipo:** Aplicación ASP.NET Core MVC con Razor Views y Bootstrap 5.
-- **Seguridad:** Autenticación por Cookies (`[Authorize(Roles = "Administrador")]`).
-- **Módulos:**
-  - **Dashboard:** Resumen métrico de clientes y empresas registradas y activas.
-  - **Gestión de Clientes:**
-    - Listado con paginación, filtros de estado (`active`, `inactive`, `all`) y búsqueda por texto.
-    - Creación y edición con conversión segura de edad (`int.Parse` con control de excepciones `try-catch`).
-    - Suspensión y reactivación lógica.
-    - Exportación de la cartera de clientes a formato Excel y PDF.
-  - **Gestión de Empresas:**
-    - Listado, búsqueda y filtros.
-    - Registro y actualización con validación de unicidad de NIT y correo electrónico.
-    - Suspensión y reactivación lógica.
+### 4. `Firmeza.API` (Web API RESTful)
+- **Tipo:** ASP.NET Core Web API (.NET 10).
+- **Seguridad:** Autenticación JWT Bearer y políticas de autorización por rol (`SoloAdministrador` y `SoloCliente`).
+- **Swagger UI:** Documentación interactiva disponible en `/swagger` con autenticación Bearer integrada.
+- **Controladores y Endpoints:**
+  - **`AuthController` (`/api/auth`)**:
+    - `POST /api/auth/login`: Autenticación con generación de token JWT.
+    - `POST /api/auth/register`: Registro de nuevos clientes.
+    - `GET /api/auth/me`: Consulta de perfil del usuario en sesión.
+  - **`DashboardController` (`/api/dashboard`)**:
+    - `GET /api/dashboard`: Métricas consolidadas (total de clientes activos/suspendidos, empresas y desglose por roles).
+  - **`ClientesController` (`/api/clientes`)**:
+    - `GET /api/clientes`: Búsqueda paginada con filtros de texto, rol (`Administrador` / `Cliente`) y estado (`active` / `inactive` / `all`).
+    - `GET /api/clientes/{id}`: Obtener detalle por ID.
+    - `POST /api/clientes`: Crear nuevo cliente.
+    - `PUT /api/clientes/{id}`: Actualizar cliente existente.
+    - `DELETE /api/clientes/{id}`: **Eliminación lógica / Suspensión** (desactiva al cliente y bloquea el acceso de Identity).
+    - `PATCH /api/clientes/{id}/activate`: **Reactivación** (devuelve al cliente a la cartera activa y desbloquea Identity).
+    - `DELETE /api/clientes/{id}/permanent`: **Eliminación física definitiva** (elimina registro y usuario de Identity).
+    - `GET /api/clientes/export-excel`: Descarga de reporte en formato Excel (.xlsx).
+    - `GET /api/clientes/export-pdf`: Descarga de reporte en formato PDF (.pdf).
+  - **`EmpresasController` (`/api/empresas`)**:
+    - `GET /api/empresas`: Listado paginado y búsqueda por NIT, nombre o correo.
+    - `POST /api/empresas`: Registro de nueva empresa.
+    - `PUT /api/empresas/{id}`: Actualización de datos corporativos.
+    - `DELETE /api/empresas/{id}`: Eliminación/desactivación de empresa.
+    - `GET /api/empresas/export-excel`: Reporte Excel (.xlsx) de empresas.
+    - `GET /api/empresas/export-pdf`: Reporte PDF (.pdf) de empresas.
 
 ---
 
-### 5. `Firmeza.API` (Web API REST)
-- **Tipo:** ASP.NET Core Web API.
-- **Seguridad:** JWT Bearer Token y políticas de autorización (`SoloAdministrador`).
-- **Documentación interactiva:** Swagger UI habilitado con soporte para autorización Bearer (`Authorize`).
-- **Endpoints clave:**
-  - **Autenticación:**
-    - `POST /api/auth/register`: Registro de cuentas con bienvenida por correo.
-    - `POST /api/auth/login`: Retorna token JWT con reclamos de rol y `ClienteId`.
-  - **Clientes (`/api/Clientes`):**
-    - `GET /api/Clientes`: Listado paginado con búsqueda y filtro de estado.
-    - `GET /api/Clientes/{id:guid}`: Consulta por identificador `Guid`.
-    - `POST /api/Clientes`: Creación validada con FluentValidation y control de duplicados.
-    - `PUT /api/Clientes/{id:guid}`: Actualización validada.
-    - `PATCH /api/Clientes/{id:guid}/suspend` y `PATCH /api/Clientes/{id:guid}/activate`: Suspensión y reactivación lógica.
-  - **Empresas (`/api/Empresas`):**
-    - `GET /api/Empresas`: Listado paginado con búsqueda y filtro de estado.
-    - `GET /api/Empresas/{id:guid}`: Consulta por identificador `Guid`.
-    - `POST /api/Empresas`: Creación validada.
-    - `PUT /api/Empresas/{id:guid}`: Actualización validada.
-    - `PATCH /api/Empresas/{id:guid}/suspend` y `PATCH /api/Empresas/{id:guid}/activate`: Suspensión y reactivación lógica.
-
----
-
-### 6. `Firmeza.Tests`
-- Pruebas unitarias automáticas con **xUnit**:
-  - Mapeos de entidades y cálculo de edad mediante `AutoMapper`.
-  - Validación de campos requeridos y formatos en clientes con `ClienteValidator` (FluentValidation).
-  - Manejo de excepciones en conversión numérica de texto a edad.
-
----
-
-## ⚙️ Configuración y Variables de Entorno
-
-El proyecto lee la configuración desde el archivo `.env` en la raíz de la solución o desde variables de entorno del sistema operativo:
-
-### Ejemplo de `.env`:
-```env
-# Conexión PostgreSQL
-ConnectionStrings__DefaultConnection=Host=localhost;Port=5432;Database=firmeza;Username=firmeza;Password=coder1234
-
-# Credenciales del Administrador inicial (DatabaseSeeder)
-ADMIN_EMAIL=admin@firmeza.com
-ADMIN_PASSWORD=Admin123*
-
-# Autenticación JWT para Firmeza.API
-JWT_KEY=ClaveSuperSecretaFirmeza2026ParaTokenJWTConLongitudSegura123!
-JWT_ISSUER=FirmezaAPI
-JWT_AUDIENCE=FirmezaClient
-
-# Configuración SMTP (Envío de correos)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=tu_correo@gmail.com
-SMTP_PASSWORD=tu_app_password
-SMTP_FROM_EMAIL=tu_correo@gmail.com
-SMTP_FROM_NAME=Firmeza
-```
+### 5. `Firmeza.Web` (Frontend SPA en Angular)
+- **Tipo:** Single Page Application en Angular con arquitectura Standalone, diseño moderno Dark Glassmorphism y Bootstrap 5.3.
+- **Seguridad en el Cliente:**
+  - `authInterceptor`: Inyecta el token Bearer en todas las peticiones HTTP y maneja errores de autenticación.
+  - `authGuard` y `roleGuard`: Protegen rutas para evitar accesos no autorizados.
+- **Módulos Principales:**
+  - **Página de Inicio (`/`):** Landing page corporativa moderna con acceso rápido a login y portal.
+  - **Autenticación (`/Login`):** Formulario de login con selector rápido de credenciales demo y validaciones en vivo.
+  - **Panel de Administración (`/admin`):**
+    - **Dashboard (`/admin`):** Tarjetas de métricas interactivas y acceso rápido.
+    - **Gestión de Clientes (`/admin/clientes`):**
+      - 📁 **Pestaña Cartera Activa:** Clientes operativos, creación, edición, filtro por rol y suspensión.
+      - ⏸️ **Pestaña Clientes Suspendidos:** Visualización de clientes inactivos con opciones de **Reactivar** o **Eliminar Permanente**.
+      - Exportación de reportes a **Excel** y **PDF**.
+    - **Gestión de Empresas (`/admin/empresas`):**
+      - Directorio empresarial, creación, edición, eliminación y exportación a **Excel** y **PDF**.
+  - **Portal del Cliente (`/cliente`):**
+    - Vista personalizada para clientes autenticados con consulta de perfil e información de contacto.
 
 ---
 
 ## 🚀 Cómo Ejecutar el Proyecto
 
-### Requisitos Previos
-- **.NET SDK 10** instalado.
-- **Node.js >= v22.22.3** (requerido para Angular CLI).
-- **Docker & Docker Compose** (para la base de datos PostgreSQL o ejecución en contenedores).
-
----
-
-### 1. Base de Datos (PostgreSQL con Docker)
-Asegúrate de contar con el archivo `.env` configurado en la raíz del proyecto. Para iniciar el contenedor de PostgreSQL:
-
+### 1. Iniciar la Base de Datos (PostgreSQL)
+Inicia el contenedor de base de datos con Docker Compose:
 ```bash
 docker compose up -d db
 ```
 
----
-
-### 2. Compilación y Pruebas Unitarias
-
+### 2. Iniciar el Backend (`Firmeza.API`)
 ```bash
-# Compilar toda la solución
-dotnet build FirmezaSolution.sln
-
-# Ejecutar las pruebas unitarias
-dotnet test tests/Firmeza.Tests/Firmeza.Tests.csproj
+dotnet run --project src/Firmeza.API/Firmeza.API.csproj --launch-profile http
 ```
+- **Swagger UI:** [http://localhost:5246/swagger](http://localhost:5246/swagger)
 
----
-
-### 3. Ejecución de Componentes en Local
-
-#### A. Panel Web de Administración (Admin MVC)
+### 3. Iniciar el Frontend (`Firmeza.Web`)
+Utiliza el script con entorno Node.js v22+ configurado:
 ```bash
-dotnet run --project src/Firmeza.Admin/Firmeza.Admin.csproj
+./start-web.sh
 ```
-- **URL:** [http://localhost:5287](http://localhost:5287) o [https://localhost:7066](https://localhost:7066)
-- **Credenciales por defecto:**
-  - **Usuario:** `admin@firmeza.com`
-  - **Contraseña:** `Admin123*`
-
-#### B. Web API REST
-```bash
-dotnet run --project src/Firmeza.API/Firmeza.API.csproj
-```
-- **Swagger UI:** [http://localhost:5246/swagger](http://localhost:5246/swagger) o [https://localhost:7269/swagger](https://localhost:7269/swagger)
-- Autenticación con JWT disponible haciendo clic en **Authorize**.
-
-#### C. Frontend Angular (Cliente SPA)
-> Requiere Node.js `>= v22.22.3`.
-
-Puedes iniciarlo directamente con el script automatizado (utiliza Node 22 automáticamente):
-```bash
-./start-client.sh
-```
-
-O manualmente:
-```bash
-cd src/Firmeza.Client
-npm install
-npm start
-```
-- **URL:** [http://localhost:4200](http://localhost:4200)
+- **Aplicación Web:** [http://localhost:4200](http://localhost:4200)
 
 ---
 
-### 4. Ejecución Completa con Docker Compose (Opcional)
+## 🔑 Credenciales de Acceso Iniciales
 
-Para desplegar la base de datos y la aplicación administrativa en contenedores:
-
-```bash
-docker compose up --build
-```
-- **Acceso:** [http://localhost:8085](http://localhost:8085)
-
+| Rol | Correo Electrónico | Contraseña | Destino tras Login |
+| :--- | :--- | :--- | :--- |
+| **Administrador** | `admin@firmeza.com` | `Admin123*` | `/admin` (Dashboard Admin) |
+| **Cliente** | `cliente@firmeza.com` | `Cliente123*` | `/cliente` (Portal Cliente) |
 
 ---
 
-## 📄 Licencias de Terceros
-- **EPPlus:** Configurado bajo contexto de licencia no comercial (`LicenseContext.NonCommercial`).
-- **QuestPDF:** Configurado bajo licencia comunitaria (`LicenseType.Community`).
+## 🧪 Pruebas Unitarias
+
+Para ejecutar las pruebas automatizadas del proyecto:
+```bash
+dotnet test
+```
+Todas las pruebas de validación, reglas de dominio y perfiles de mapeo deben ejecutarse exitosamente.
