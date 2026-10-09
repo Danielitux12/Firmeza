@@ -1,377 +1,418 @@
-<app-navbar></app-navbar>
+<div class="app-layout" (click)="closeDropdown()">
+  <app-navbar></app-navbar>
 
-<div class="container-fluid px-lg-5 py-4">
-  <!-- Pestañas de Navegación: Activos vs Suspendidos -->
-  <div class="d-flex align-items-center gap-2 mb-4 border-bottom border-card pb-1">
-    <button
-      (click)="setTab('activos')"
-      class="btn btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-top border-0 position-relative"
-      [ngClass]="activeTab === 'activos' ? 'btn-primary text-white fw-bold shadow-sm' : 'btn-outline-secondary text-secondary'"
-      style="margin-bottom: -1px; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important;">
-      <i class="bi bi-people-fill"></i>
-      <span>Cartera Activa</span>
-    </button>
-    
-    <button
-      (click)="setTab('suspendidos')"
-      class="btn btn-sm d-flex align-items-center gap-2 px-3 py-2 rounded-top border-0 position-relative"
-      [ngClass]="activeTab === 'suspendidos' ? 'btn-warning text-dark fw-bold shadow-sm' : 'btn-outline-secondary text-secondary'"
-      style="margin-bottom: -1px; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important;">
-      <i class="bi bi-pause-circle-fill"></i>
-      <span>Clientes Suspendidos</span>
-    </button>
-  </div>
+  <main class="main-workspace">
+    <div class="p-3 p-lg-4">
+      <!-- Cabecera de Página Consistente -->
+      <div class="page-header">
+        <div class="page-header-info">
+          <h1 class="page-header-title">Clientes</h1>
+          <p class="page-header-desc">Directorio de clientes y estados</p>
+        </div>
 
-  <!-- Encabezado de Gestión de Clientes -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom border-card gap-3">
-    <div>
-      <div class="d-flex align-items-center gap-2 mb-1">
-        <span *ngIf="activeTab === 'activos'" class="badge bg-primary">
-          <i class="bi bi-people-fill me-1"></i> Cartera Activa
-        </span>
-        <span *ngIf="activeTab === 'suspendidos'" class="badge bg-warning text-dark">
-          <i class="bi bi-pause-circle-fill me-1"></i> Apartado Suspendidos
-        </span>
-        <span class="text-muted small">&bull; {{ activeTab === 'activos' ? 'Directorio Centralizado' : 'Baja Lógica y Reactivación' }}</span>
+        <div class="page-header-actions">
+          <button (click)="downloadExcel()" class="btn btn-outline-secondary btn-sm" title="Exportar a Excel">
+            <i class="bi bi-file-earmark-excel text-success"></i>
+            <span>Exportar Excel</span>
+          </button>
+          <button (click)="downloadPdf()" class="btn btn-outline-secondary btn-sm" title="Exportar a PDF">
+            <i class="bi bi-file-earmark-pdf text-danger"></i>
+            <span>Exportar PDF</span>
+          </button>
+          <button (click)="openCreateModal()" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i>
+            <span>Nuevo cliente</span>
+          </button>
+        </div>
       </div>
-      <h2 class="h3 fw-bold mb-0 text-light">{{ activeTab === 'activos' ? 'Gestión de Clientes Activos' : 'Clientes Suspendidos' }}</h2>
-      <p class="text-muted small mb-0 mt-1">
-        {{ activeTab === 'activos' ? 'Administra el padrón de clientes activos, estados de cuenta y exportaciones oficiales' : 'Padrón de clientes en estado de baja lógica. Puedes reactivar su acceso en cualquier momento o eliminarlos definitivamente.' }}
-      </p>
-    </div>
-    
-    <div class="d-flex gap-2 flex-wrap align-items-center">
-      <button (click)="downloadExcel()" class="btn btn-outline-success btn-sm shadow-sm" title="Descargar reporte en formato Excel">
-        <i class="bi bi-file-earmark-excel-fill me-1"></i> Exportar Excel
-      </button>
-      <button (click)="downloadPdf()" class="btn btn-outline-danger btn-sm shadow-sm" title="Descargar reporte en formato PDF">
-        <i class="bi bi-file-earmark-pdf-fill me-1"></i> Exportar PDF
-      </button>
-      <button *ngIf="activeTab === 'activos'" (click)="openCreateModal()" class="btn btn-primary btn-sm shadow-sm">
-        <i class="bi bi-person-plus-fill me-1"></i> Nuevo Cliente
-      </button>
-    </div>
-  </div>
 
-  <!-- Alertas de Página -->
-  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm d-flex align-items-center gap-2" role="alert">
-    <i class="bi bi-check-circle-fill fs-5"></i>
-    <div class="flex-grow-1">{{ successMessage }}</div>
-    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
-  </div>
-  
-  <div *ngIf="errorMessage && !showModal" class="alert alert-danger alert-dismissible fade show shadow-sm d-flex align-items-center gap-2" role="alert">
-    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-    <div class="flex-grow-1">{{ errorMessage }}</div>
-    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
-  </div>
+      <!-- Pestañas de Estado: Cartera activa / Suspendidos -->
+      <div class="work-tabs mb-3">
+        <button
+          type="button"
+          class="work-tab-btn"
+          [class.active]="activeTab === 'activos'"
+          (click)="setTab('activos')">
+          Cartera activa
+        </button>
+        <button
+          type="button"
+          class="work-tab-btn"
+          [class.active]="activeTab === 'suspendidos'"
+          (click)="setTab('suspendidos')">
+          Suspendidos
+        </button>
+      </div>
 
-  <!-- Filtros y Búsqueda -->
-  <div class="card mb-4">
-    <div class="card-body py-3 px-4">
-      <div class="row g-3 align-items-center">
-        <!-- Barra de Búsqueda -->
-        <div class="col-md-5 col-lg-5">
-          <div class="input-group">
-            <span class="input-group-text border-end-0"><i class="bi bi-search"></i></span>
+      <!-- Alertas -->
+      <div *ngIf="successMessage" class="alert alert-success d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-check-circle"></i>
+          <span>{{ successMessage }}</span>
+        </div>
+        <button type="button" class="btn-close" (click)="successMessage = ''" aria-label="Cerrar"></button>
+      </div>
+
+      <div *ngIf="errorMessage && !showModal && !showConfirmModal" class="alert alert-danger d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-exclamation-triangle"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+        <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Cerrar"></button>
+      </div>
+
+      <!-- Barra de Herramientas Plana -->
+      <div class="table-toolbar">
+        <div class="table-toolbar-filters">
+          <div class="input-group input-group-sm flex-grow-1" style="max-width: 320px;">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
             <input
               type="text"
-              class="form-control border-start-0 ps-0"
-              placeholder="Buscar por nombre, documento o correo..."
+              class="form-control"
+              placeholder="Buscar cliente, documento..."
               [(ngModel)]="search"
               (keyup.enter)="onSearch()">
-            <button class="btn btn-primary btn-sm px-3" type="button" (click)="onSearch()">
-              Buscar
-            </button>
+          </div>
+
+          <select class="form-select form-select-sm" style="max-width: 160px;" [(ngModel)]="role" (change)="onRoleChange()">
+            <option value="all">Todos los roles</option>
+            <option value="Administrador">Administrador</option>
+            <option value="Cliente">Cliente</option>
+          </select>
+        </div>
+
+        <div class="table-toolbar-count">
+          <span>{{ totalCount }} {{ totalCount === 1 ? 'registro' : 'registros' }}</span>
+        </div>
+      </div>
+
+      <!-- Contenedor de Tabla -->
+      <div class="table-container">
+        <div *ngIf="!isLoading && clientes.length > 0" class="table-responsive border-0">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th class="sortable-th" style="width: 24%;" (click)="onSort('name')" [attr.aria-sort]="sortColumn === 'name' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                  <div class="d-inline-flex align-items-center gap-1">
+                    <span>Cliente</span>
+                    <span class="sort-indicator" *ngIf="sortColumn === 'name'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                  </div>
+                </th>
+                <th class="sortable-th" style="width: 14%;" (click)="onSort('documentNumber')" [attr.aria-sort]="sortColumn === 'documentNumber' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                  <div class="d-inline-flex align-items-center gap-1">
+                    <span>Documento</span>
+                    <span class="sort-indicator" *ngIf="sortColumn === 'documentNumber'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                  </div>
+                </th>
+                <th style="width: 20%;">Correo electrónico</th>
+                <th style="width: 14%;">Teléfono</th>
+                <th class="sortable-th text-end" style="width: 72px;" (click)="onSort('age')" [attr.aria-sort]="sortColumn === 'age' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                  <div class="d-inline-flex align-items-center justify-content-end gap-1 w-100">
+                    <span>Edad</span>
+                    <span class="sort-indicator" *ngIf="sortColumn === 'age'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                  </div>
+                </th>
+                <th style="width: 14%;">Dirección</th>
+                <th *ngIf="showRoleColumn" style="width: 8%;">Rol</th>
+                <th *ngIf="activeTab === 'suspendidos'" style="width: 100px;">Estado</th>
+                <th class="text-end" style="width: 44px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cliente of clientes">
+                <td class="fw-medium text-main">
+                  <div class="d-flex align-items-center">
+                    <span class="client-avatar">{{ getInitial(cliente.name) }}</span>
+                    <span class="text-truncate">{{ cliente.name }}</span>
+                  </div>
+                </td>
+                <td><code class="font-mono">{{ cliente.documentNumber }}</code></td>
+                <td class="text-secondary text-truncate">{{ cliente.email }}</td>
+                <td class="text-secondary tabular-nums">{{ formatPhone(cliente.phone) }}</td>
+                <td class="text-end text-secondary tabular-nums" style="width: 72px;">{{ cliente.age }}</td>
+                <td class="text-secondary text-truncate" style="max-width: 180px;" [title]="cliente.address || ''">
+                  {{ cliente.address || '—' }}
+                </td>
+                <td *ngIf="showRoleColumn" class="text-secondary">
+                  {{ cliente.role || 'Cliente' }}
+                </td>
+                <td *ngIf="activeTab === 'suspendidos'">
+                  <span class="tag-status inactive">
+                    <span class="status-indicator inactive"></span>
+                    Suspendido
+                  </span>
+                </td>
+                <td class="text-end">
+                  <!-- Botón Menú ⋯ -->
+                  <button
+                    type="button"
+                    class="btn-icon-more"
+                    (click)="toggleDropdown(cliente, $event)"
+                    [attr.aria-expanded]="activeDropdownId === cliente.id"
+                    [attr.aria-label]="'Acciones de ' + cliente.name"
+                    title="Acciones">
+                    <i class="bi bi-three-dots"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Cargando -->
+        <div *ngIf="isLoading" class="text-center py-5 text-muted">
+          <div class="spinner-border spinner-border-sm text-secondary me-2" role="status"></div>
+          <span>Cargando listado de clientes...</span>
+        </div>
+
+        <!-- Estado Vacío -->
+        <div *ngIf="!isLoading && clientes.length === 0" class="empty-state">
+          <div class="empty-state-icon"><i class="bi bi-people"></i></div>
+          <div class="empty-state-text">
+            {{ activeTab === 'activos' ? 'No hay clientes activos registrados' : 'No hay clientes suspendidos en este momento' }}
+          </div>
+          <div class="empty-state-subtext">
+            {{ activeTab === 'activos' ? 'Usa «Nuevo cliente» para agregar el primero.' : 'Todos los clientes se encuentran en la cartera activa.' }}
           </div>
         </div>
 
-        <!-- Filtro por Rol -->
-        <div class="col-md-4 col-lg-3">
-          <div class="input-group">
-            <label class="input-group-text"><i class="bi bi-shield-lock me-1"></i>Rol</label>
-            <select class="form-select" [(ngModel)]="role" (change)="onRoleChange()">
-              <option value="all">Todos los roles</option>
-              <option value="Administrador">Administrador</option>
-              <option value="Cliente">Usuario / Cliente</option>
-            </select>
+        <!-- Pie de Tabla con Paginación (Sin espacios en blanco) -->
+        <div *ngIf="totalCount > 0" class="table-footer">
+          <div>
+            Mostrando {{ showingStart }}–{{ showingEnd }} de {{ totalCount }}
           </div>
-        </div>
 
-        <!-- Contador Total -->
-        <div class="col-md-3 col-lg-4 text-md-end">
-          <span class="text-secondary small fw-medium">
-            Total {{ activeTab === 'activos' ? 'clientes activos' : 'clientes suspendidos' }}: <strong class="text-primary-light fs-6">{{ totalCount }}</strong>
-          </span>
+          <div class="table-footer-pagination">
+            <div class="d-flex align-items-center gap-1 me-3">
+              <span class="text-muted" style="font-size: 12px;">Filas:</span>
+              <select class="form-select form-select-sm py-0" style="width: 65px; height: 28px;" [value]="pageSize" (change)="onPageSizeChange($event)">
+                <option [value]="10">10</option>
+                <option [value]="25">25</option>
+                <option [value]="50">50</option>
+              </select>
+            </div>
+
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-outline-secondary" [disabled]="page <= 1" (click)="changePage(page - 1)">
+                Anterior
+              </button>
+              <button class="btn btn-outline-secondary" [disabled]="page >= totalPages" (click)="changePage(page + 1)">
+                Siguiente
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </main>
+</div>
 
-  <!-- Tabla de Clientes -->
-  <div class="card mb-4 overflow-hidden">
-    <div class="table-responsive">
-      <table class="table align-middle mb-0">
-        <thead>
-          <tr>
-            <th style="min-width: 220px;">Cliente</th>
-            <th>Documento / Cédula</th>
-            <th>Correo Electrónico</th>
-            <th>Teléfono</th>
-            <th>Edad</th>
-            <th>Dirección</th>
-            <th>Rol</th>
-            <th class="text-end" style="min-width: 140px;">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Spinner de Carga -->
-          <tr *ngIf="isLoading">
-            <td colspan="8" class="text-center py-5 text-muted">
-              <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
-              <span>Consultando clientes {{ activeTab === 'activos' ? 'activos' : 'suspendidos' }}...</span>
-            </td>
-          </tr>
+<!-- Menú Desplegable Flotante (Renderizado Fixed en Portal/Body para evitar recorte) -->
+<div
+  *ngIf="activeDropdownId && activeCliente"
+  class="table-dropdown-fixed"
+  [ngStyle]="dropdownPosition"
+  (click)="$event.stopPropagation()"
+  (keydown)="onDropdownKeyDown($event)"
+  role="menu"
+  tabindex="-1">
+  <!-- Acciones Cartera Activa -->
+  <ng-container *ngIf="activeTab === 'activos'">
+    <button type="button" class="table-dropdown-item" (click)="openEditModal(activeCliente); closeDropdown()">
+      <i class="bi bi-pencil"></i>
+      <span>Editar</span>
+    </button>
+    <button type="button" class="table-dropdown-item danger-item" (click)="openConfirmModal(activeCliente, 'suspend'); closeDropdown()">
+      <i class="bi bi-pause-circle"></i>
+      <span>Suspender</span>
+    </button>
+  </ng-container>
 
-          <!-- Estado Vacío -->
-          <tr *ngIf="!isLoading && clientes.length === 0">
-            <td colspan="8" class="text-center py-5 text-muted">
-              <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
-                   style="width: 56px; height: 56px; background: var(--surface-2); border: 1px solid var(--border-card);">
-                <i class="bi" [ngClass]="activeTab === 'activos' ? 'bi-inbox fs-3 text-muted' : 'bi-person-check fs-3 text-success'"></i>
-              </div>
-              <p class="mb-0 fw-medium">
-                {{ activeTab === 'activos' ? 'No se encontraron clientes activos con los filtros seleccionados.' : 'No hay clientes suspendidos en este momento. Todos los clientes se encuentran activos.' }}
-              </p>
-              <small class="text-muted">
-                {{ activeTab === 'activos' ? 'Prueba cambiando el criterio de búsqueda o agrega un nuevo cliente.' : 'Cuando suspendas un cliente desde la cartera activa, aparecerá listado aquí.' }}
-              </small>
-            </td>
-          </tr>
+  <!-- Acciones Suspendidos -->
+  <ng-container *ngIf="activeTab === 'suspendidos'">
+    <button type="button" class="table-dropdown-item" (click)="openEditModal(activeCliente); closeDropdown()">
+      <i class="bi bi-pencil"></i>
+      <span>Editar</span>
+    </button>
+    <button type="button" class="table-dropdown-item success-item" (click)="openConfirmModal(activeCliente, 'reactivate'); closeDropdown()">
+      <i class="bi bi-play-circle"></i>
+      <span>Reactivar</span>
+    </button>
+    <button type="button" class="table-dropdown-item danger-item" (click)="openConfirmModal(activeCliente, 'delete'); closeDropdown()">
+      <i class="bi bi-trash3"></i>
+      <span>Eliminar</span>
+    </button>
+  </ng-container>
+</div>
 
-          <!-- Filas de Datos -->
-          <tr *ngFor="let cliente of clientes">
-            <td>
-              <div class="d-flex align-items-center gap-3">
-                <div class="avatar-chip" [style.opacity]="activeTab === 'suspendidos' ? '0.7' : '1'">
-                  {{ cliente.name.slice(0, 2).toUpperCase() }}
-                </div>
-                <div>
-                  <div class="fw-semibold text-light">{{ cliente.name }}</div>
-                  <small class="text-muted d-block" style="font-size: 0.78rem;">ID: {{ cliente.id?.slice(0, 8) }}...</small>
-                </div>
-              </div>
-            </td>
-            <td>
-              <code>{{ cliente.documentNumber }}</code>
-            </td>
-            <td>
-              <span class="text-secondary">{{ cliente.email }}</span>
-            </td>
-            <td>
-              <span class="text-light">{{ cliente.phone || '-' }}</span>
-            </td>
-            <td>
-              <span class="badge" style="background: var(--surface-3); color: var(--text-primary); border: 1px solid var(--border-card);">
-                {{ cliente.age }} años
-              </span>
-            </td>
-            <td>
-              <span class="text-secondary small" style="max-width: 200px; display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="cliente.address || ''">
-                {{ cliente.address || '-' }}
-              </span>
-            </td>
-            <td>
-              <span class="badge"
-                    [style.background]="cliente.role === 'Administrador' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(56, 189, 248, 0.15)'"
-                    [style.color]="cliente.role === 'Administrador' ? '#c4b5fd' : '#38bdf8'"
-                    [style.border]="cliente.role === 'Administrador' ? '1px solid rgba(139, 92, 246, 0.4)' : '1px solid rgba(56, 189, 248, 0.3)'"
-                    style="font-size: 0.75rem; letter-spacing: 0.02em; padding: 0.35rem 0.65rem;">
-                <i class="bi" [ngClass]="cliente.role === 'Administrador' ? 'bi-shield-shaded me-1' : 'bi-person-badge me-1'"></i>
-                {{ cliente.role || 'Cliente' }}
-              </span>
-            </td>
-            <td class="text-end">
-              <!-- Acciones para Cartera Activa -->
-              <div *ngIf="activeTab === 'activos'" class="btn-group btn-group-sm">
-                <button
-                  (click)="openEditModal(cliente)"
-                  class="btn btn-outline-primary"
-                  title="Editar datos del cliente">
-                  <i class="bi bi-pencil-square"></i>
-                </button>
-                <button
-                  (click)="deleteCliente(cliente)"
-                  class="btn btn-outline-danger"
-                  title="Suspender cliente y mover al apartado de suspendidos">
-                  <i class="bi bi-pause-circle"></i>
-                </button>
-              </div>
-
-              <!-- Acciones para Clientes Suspendidos -->
-              <div *ngIf="activeTab === 'suspendidos'" class="btn-group btn-group-sm">
-                <button
-                  (click)="activateCliente(cliente)"
-                  class="btn btn-outline-success"
-                  title="Reactivar cliente y habilitar acceso">
-                  <i class="bi bi-arrow-clockwise me-1"></i> Reactivar
-                </button>
-                <button
-                  (click)="hardDeleteCliente(cliente)"
-                  class="btn btn-outline-danger"
-                  title="Eliminar definitivamente de la base de datos">
-                  <i class="bi bi-trash3-fill"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Paginación -->
-    <div *ngIf="totalPages > 1" class="card-footer d-flex justify-content-between align-items-center py-3">
-      <small class="text-muted">
-        Mostrando página <strong class="text-light">{{ page }}</strong> de <strong class="text-light">{{ totalPages }}</strong>
-      </small>
-      <div class="btn-group btn-group-sm">
-        <button class="btn btn-outline-secondary" [disabled]="page <= 1" (click)="changePage(page - 1)">
-          <i class="bi bi-chevron-left me-1"></i> Anterior
+<!-- Modal: Confirmación de Acción (Suspender / Eliminar / Reactivar) -->
+<div *ngIf="showConfirmModal" class="modal-overlay" (click)="cancelConfirm()">
+  <div class="modal-dialog modal-dialog-sm modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ confirmModalTitle }}</h5>
+        <button type="button" class="btn-modal-close" (click)="cancelConfirm()" aria-label="Cerrar">
+          <i class="bi bi-x-lg"></i>
         </button>
-        <button class="btn btn-outline-secondary" [disabled]="page >= totalPages" (click)="changePage(page + 1)">
-          Siguiente <i class="bi bi-chevron-right ms-1"></i>
+      </div>
+      <div class="modal-body">
+        <p class="text-secondary mb-0" style="font-size: 13.5px; line-height: 1.5;">
+          {{ confirmModalMessage }}
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelConfirm()">Cancelar</button>
+        <button
+          type="button"
+          class="btn btn-sm"
+          [ngClass]="confirmActionType === 'reactivate' ? 'btn-outline-success' : 'btn-outline-danger'"
+          (click)="executeConfirmedAction()">
+          {{ confirmActionType === 'reactivate' ? 'Reactivar cliente' : (confirmActionType === 'suspend' ? 'Suspender cliente' : 'Eliminar definitivamente') }}
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal de Registro / Edición de Cliente -->
-<div *ngIf="showModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(7, 7, 13, 0.82); backdrop-filter: blur(8px);">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content shadow-lg">
+<!-- Modal: Crear / Editar Cliente -->
+<div *ngIf="showModal" class="modal-overlay" (click)="onBackdropClick($event)">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title fw-bold text-light d-flex align-items-center gap-2">
-          <i class="bi" [ngClass]="isEditing ? 'bi-pencil-square text-primary-light' : 'bi-person-plus-fill text-primary-light'"></i>
-          <span>{{ modalTitle }}</span>
-        </h5>
-        <button type="button" class="btn-close" (click)="closeModal()"></button>
+        <h5 class="modal-title">{{ modalTitle }}</h5>
+        <button type="button" class="btn-modal-close" (click)="closeModal()" aria-label="Cerrar">
+          <i class="bi bi-x-lg"></i>
+        </button>
       </div>
-      <div class="modal-body p-4">
-        <!-- Error dentro del modal -->
-        <div *ngIf="modalErrorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2" role="alert">
-          <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
-          <div>{{ modalErrorMessage }}</div>
-        </div>
 
-        <form (ngSubmit)="saveCliente()" novalidate>
-          <!-- Nombre Completo -->
+      <form (ngSubmit)="saveCliente()" novalidate class="d-flex flex-column flex-grow-1 overflow-hidden">
+        <div class="modal-body">
+          <div *ngIf="modalErrorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2" role="alert">
+            <i class="bi bi-exclamation-triangle flex-shrink-0"></i>
+            <div>{{ modalErrorMessage }}</div>
+          </div>
+
+          <!-- Sección: Datos personales -->
+          <div class="form-section-header">
+            <span class="form-section-title">Datos personales</span>
+            <span class="form-section-line"></span>
+          </div>
+
           <div class="mb-3">
-            <label class="form-label">Nombre Completo <span class="text-danger">*</span></label>
+            <label class="form-label" for="cliente-name">Nombre completo <span class="req-star">*</span></label>
             <input
+              id="cliente-name"
               type="text"
               class="form-control"
-              [class.is-invalid]="nameError"
+              [class.is-invalid]="isFieldInvalid('name')"
               [(ngModel)]="currentCliente.name"
               name="name"
-              (input)="nameError = ''; modalErrorMessage = ''"
-              placeholder="Ej. Carlos Mendoza">
-            <div *ngIf="nameError" class="text-danger small mt-1 d-flex align-items-center gap-1">
-              <i class="bi bi-exclamation-circle"></i> {{ nameError }}
-            </div>
+              (blur)="markTouched('name')"
+              (input)="validateField('name'); modalErrorMessage = ''"
+              placeholder="Ej. Juan Pérez"
+              autocomplete="name">
+            <div *ngIf="isFieldInvalid('name')" class="form-error">{{ nameError }}</div>
           </div>
 
-          <!-- Documento y Edad -->
-          <div class="row g-3 mb-3">
-            <div class="col-md-7">
-              <label class="form-label">Documento / Cédula <span class="text-danger">*</span></label>
+          <div class="row">
+            <div class="col-sm-7 mb-3">
+              <label class="form-label" for="cliente-doc">Número de documento <span class="req-star">*</span></label>
               <input
+                id="cliente-doc"
                 type="text"
-                class="form-control font-monospace"
-                [class.is-invalid]="documentError"
+                class="form-control font-mono"
+                [class.is-invalid]="isFieldInvalid('documentNumber')"
                 [(ngModel)]="currentCliente.documentNumber"
                 name="documentNumber"
-                (input)="documentError = ''; modalErrorMessage = ''"
-                placeholder="Ej. 1098765432">
-              <div *ngIf="documentError" class="text-danger small mt-1 d-flex align-items-center gap-1">
-                <i class="bi bi-exclamation-circle"></i> {{ documentError }}
-              </div>
+                (blur)="markTouched('documentNumber')"
+                (input)="validateField('documentNumber'); modalErrorMessage = ''"
+                placeholder="Ej. 1020304050 (solo números)"
+                autocomplete="off">
+              <div *ngIf="isFieldInvalid('documentNumber')" class="form-error">{{ documentError }}</div>
             </div>
-            <div class="col-md-5">
-              <label class="form-label">Edad <span class="text-danger">*</span></label>
+
+            <div class="col-sm-5 mb-3">
+              <label class="form-label" for="cliente-age">Edad <span class="req-star">*</span></label>
               <input
+                id="cliente-age"
                 type="number"
-                class="form-control"
-                [class.is-invalid]="ageError"
+                min="18"
+                class="form-control tabular-nums"
+                [class.is-invalid]="isFieldInvalid('age')"
                 [(ngModel)]="currentCliente.age"
                 name="age"
-                (input)="ageError = ''; modalErrorMessage = ''"
-                min="18"
-                max="120">
-              <div *ngIf="ageError" class="text-danger small mt-1 d-flex align-items-center gap-1">
-                <i class="bi bi-exclamation-circle"></i> {{ ageError }}
-              </div>
+                (blur)="markTouched('age')"
+                (input)="validateField('age'); modalErrorMessage = ''"
+                placeholder="Ej. 35"
+                autocomplete="off">
+              <div *ngIf="isFieldInvalid('age')" class="form-error">{{ ageError }}</div>
             </div>
           </div>
 
-          <!-- Correo Electrónico -->
+          <!-- Sección: Contacto -->
+          <div class="form-section-header">
+            <span class="form-section-title">Contacto</span>
+            <span class="form-section-line"></span>
+          </div>
+
           <div class="mb-3">
-            <label class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
+            <label class="form-label" for="cliente-email">Correo electrónico <span class="req-star">*</span></label>
             <input
+              id="cliente-email"
               type="email"
               class="form-control"
-              [class.is-invalid]="emailError"
+              [class.is-invalid]="isFieldInvalid('email')"
               [(ngModel)]="currentCliente.email"
               name="email"
-              (input)="emailError = ''; modalErrorMessage = ''"
-              placeholder="correo@ejemplo.com">
-            <div *ngIf="emailError" class="text-danger small mt-1 d-flex align-items-center gap-1">
-              <i class="bi bi-exclamation-circle"></i> {{ emailError }}
-            </div>
+              (blur)="markTouched('email')"
+              (input)="validateField('email'); modalErrorMessage = ''"
+              placeholder="correo@ejemplo.com"
+              autocomplete="email">
+            <div *ngIf="isFieldInvalid('email')" class="form-error">{{ emailError }}</div>
           </div>
 
-          <!-- Teléfono de Contacto -->
           <div class="mb-3">
-            <label class="form-label">Teléfono de Contacto <span class="text-danger">*</span></label>
+            <label class="form-label" for="cliente-phone">Teléfono de contacto <span class="req-star">*</span></label>
             <input
-              type="text"
-              class="form-control"
-              [class.is-invalid]="phoneError"
+              id="cliente-phone"
+              type="tel"
+              class="form-control tabular-nums"
+              [class.is-invalid]="isFieldInvalid('phone')"
               [(ngModel)]="currentCliente.phone"
               name="phone"
-              (input)="phoneError = ''; modalErrorMessage = ''"
-              placeholder="Ej. +57 300 123 4567">
-            <div *ngIf="phoneError" class="text-danger small mt-1 d-flex align-items-center gap-1">
-              <i class="bi bi-exclamation-circle"></i> {{ phoneError }}
-            </div>
+              (blur)="markTouched('phone')"
+              (input)="validateField('phone'); modalErrorMessage = ''"
+              placeholder="Ej. +57 300 123 4567"
+              autocomplete="tel">
+            <div class="form-hint" *ngIf="!isFieldInvalid('phone')">Con indicativo, ej. +57 300 123 4567</div>
+            <div *ngIf="isFieldInvalid('phone')" class="form-error">{{ phoneError }}</div>
           </div>
 
-          <!-- Dirección de Residencia -->
-          <div class="mb-4">
-            <label class="form-label">Dirección de Domicilio <span class="text-danger">*</span></label>
+          <div class="mb-0">
+            <label class="form-label" for="cliente-address">Dirección <span class="req-star">*</span></label>
             <input
+              id="cliente-address"
               type="text"
               class="form-control"
-              [class.is-invalid]="addressError"
+              [class.is-invalid]="isFieldInvalid('address')"
               [(ngModel)]="currentCliente.address"
               name="address"
-              (input)="addressError = ''; modalErrorMessage = ''"
-              placeholder="Ej. Calle 123 #45-67">
-            <div *ngIf="addressError" class="text-danger small mt-1 d-flex align-items-center gap-1">
-              <i class="bi bi-exclamation-circle"></i> {{ addressError }}
-            </div>
+              (blur)="markTouched('address')"
+              (input)="validateField('address'); modalErrorMessage = ''"
+              placeholder="Ej. Calle 123 #45-67"
+              autocomplete="street-address">
+            <div *ngIf="isFieldInvalid('address')" class="form-error">{{ addressError }}</div>
           </div>
+        </div>
 
-          <!-- Botones de Acción -->
-          <div class="d-flex justify-content-end gap-2 pt-3 border-top border-card">
-            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeModal()">Cancelar</button>
-            <button type="submit" class="btn btn-primary btn-sm px-3 shadow-sm" [disabled]="isSaving">
-              <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status"></span>
-              <span>{{ isEditing ? 'Guardar Cambios' : 'Registrar Cliente' }}</span>
-            </button>
-          </div>
-        </form>
-      </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-sm" [disabled]="isSaving">
+            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status"></span>
+            <span>{{ isEditing ? 'Guardar cambios' : 'Registrar cliente' }}</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

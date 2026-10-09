@@ -55,7 +55,7 @@ public class AuthController : ControllerBase
     /// Envía además un correo electrónico de bienvenida.
     /// </summary>
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequestDto request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Register([FromBody] RegisterRequestDto request, CancellationToken cancellationToken = default)
     {
         var validation = await _registerValidator.ValidateAsync(request, cancellationToken);
         if (!validation.IsValid)
@@ -70,7 +70,7 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "El correo electrónico ya se encuentra registrado." });
         }
 
-        var existingCliente = await _context.Clientes.AnyAsync(c => c.DocumentNumber == request.DocumentNumber || c.Email == request.Email);
+        var existingCliente = await _context.Clientes.AnyAsync(c => c.DocumentNumber == request.DocumentNumber || c.Email == request.Email, cancellationToken);
         if (existingCliente)
         {
             return BadRequest(new { message = "Ya existe un cliente con ese número de documento o correo electrónico." });
@@ -111,7 +111,7 @@ public class AuthController : ControllerBase
         };
 
         _context.Clientes.Add(cliente);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         // 4. Enviar correo de bienvenida en segundo plano
         _ = Task.Run(async () =>
@@ -140,7 +140,7 @@ public class AuthController : ControllerBase
     /// Inicia sesión y genera un token JWT con los roles y reclamos del usuario.
     /// </summary>
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequestDto request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto request, CancellationToken cancellationToken = default)
     {
         var validation = await _loginValidator.ValidateAsync(request, cancellationToken);
         if (!validation.IsValid)
@@ -165,7 +165,7 @@ public class AuthController : ControllerBase
         var clienteIdStr = string.Empty;
         if (primaryRole == "Cliente")
         {
-            var cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == user.Id || c.Email == user.Email);
+            var cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == user.Id || c.Email == user.Email, cancellationToken);
             if (cliente is null || !cliente.IsActive)
             {
                 return Unauthorized(new ProblemDetails
@@ -231,7 +231,7 @@ public class AuthController : ControllerBase
     /// </summary>
     [Microsoft.AspNetCore.Authorization.Authorize]
     [HttpGet("me")]
-    public async Task<IActionResult> GetMe()
+    public async Task<IActionResult> GetMe(CancellationToken cancellationToken = default)
     {
         var email = User.FindFirstValue(ClaimTypes.Email);
         var role = User.FindFirstValue(ClaimTypes.Role) ?? "Cliente";
@@ -247,11 +247,11 @@ public class AuthController : ControllerBase
             var clienteIdStr = User.FindFirst("ClienteId")?.Value;
             if (Guid.TryParse(clienteIdStr, out var cId))
             {
-                cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.Id == cId);
+                cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.Id == cId, cancellationToken);
             }
             else
             {
-                cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.Email == email);
+                cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.Email == email, cancellationToken);
             }
         }
 

@@ -34,24 +34,26 @@ public class SmtpEmailSender : IEmailSender
     /// <summary>
     /// Envía un correo electrónico simple en formato HTML.
     /// </summary>
-    public async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
+    public async Task SendEmailAsync(string toEmail, string subject, string htmlBody, CancellationToken cancellationToken = default)
     {
-        await SendEmailInternalAsync(toEmail, subject, htmlBody, null, null);
+        await SendEmailInternalAsync(toEmail, subject, htmlBody, null, null, cancellationToken);
     }
 
     /// <summary>
     /// Envía un correo electrónico con un archivo adjunto binario (por ejemplo, el recibo PDF).
     /// </summary>
-    public async Task SendEmailWithAttachmentAsync(string toEmail, string subject, string htmlBody, byte[] attachmentBytes, string attachmentFileName)
+    public async Task SendEmailWithAttachmentAsync(string toEmail, string subject, string htmlBody, byte[] attachmentBytes, string attachmentFileName, CancellationToken cancellationToken = default)
     {
-        await SendEmailInternalAsync(toEmail, subject, htmlBody, attachmentBytes, attachmentFileName);
+        await SendEmailInternalAsync(toEmail, subject, htmlBody, attachmentBytes, attachmentFileName, cancellationToken);
     }
 
     /// <summary>
     /// Método privado que centraliza la creación y envío del mensaje SMTP con manejo seguro de excepciones.
     /// </summary>
-    private async Task SendEmailInternalAsync(string toEmail, string subject, string htmlBody, byte[]? attachmentBytes, string? attachmentFileName)
+    private async Task SendEmailInternalAsync(string toEmail, string subject, string htmlBody, byte[]? attachmentBytes, string? attachmentFileName, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         // Si las credenciales SMTP no están configuradas, registramos en log y no rompemos la app académica
         if (string.IsNullOrWhiteSpace(_settings.Username) || string.IsNullOrWhiteSpace(_settings.Password) || _settings.Password == "tu_app_password_aqui")
         {
@@ -84,13 +86,17 @@ public class SmtpEmailSender : IEmailSender
                 message.Attachments.Add(attachment);
             }
 
-            await client.SendMailAsync(message);
+            cancellationToken.ThrowIfCancellationRequested();
+            await client.SendMailAsync(message, cancellationToken);
             _logger.LogInformation("Correo enviado exitosamente a {ToEmail} con asunto '{Subject}'", toEmail, subject);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Envío de correo a {ToEmail} cancelado.", toEmail);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al enviar correo SMTP a {ToEmail}: {Message}", toEmail, ex.Message);
-            // No relanzamos para evitar que falle el flujo de compra o registro si Gmail bloquea la conexión
         }
     }
 }

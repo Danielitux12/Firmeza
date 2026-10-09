@@ -1,71 +1,72 @@
-<nav class="navbar navbar-expand-lg navbar-dark navbar-firmeza px-3 py-2">
-  <div class="container-fluid">
-    <a class="navbar-brand brand-title d-flex align-items-center gap-2" routerLink="/">
-      <i class="bi bi-shield-lock-fill brand-icon fs-4"></i>
+<aside class="app-sidebar">
+  <!-- Cabecera de Barra Lateral con Logotipo -->
+  <div class="sidebar-header">
+    <a class="sidebar-brand" [routerLink]="isCliente ? '/cliente' : '/'">
+      <span class="sidebar-brand-mark">F</span>
       <span>Firmeza</span>
     </a>
-
-    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-            <i class="bi bi-house-door me-1"></i>Inicio
-          </a>
-        </li>
-
-        <!-- Enlaces exclusivos de Administrador -->
-        <ng-container *ngIf="isAdmin">
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-              <i class="bi bi-speedometer2 me-1"></i>Dashboard Admin
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/admin/clientes" routerLinkActive="active">
-              <i class="bi bi-people me-1"></i>Clientes
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/admin/empresas" routerLinkActive="active">
-              <i class="bi bi-building me-1"></i>Empresas
-            </a>
-          </li>
-        </ng-container>
-
-        <!-- Enlace exclusivo de Cliente -->
-        <ng-container *ngIf="isCliente">
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/cliente" routerLinkActive="active">
-              <i class="bi bi-person-badge me-1"></i>Mi Portal
-            </a>
-          </li>
-        </ng-container>
-      </ul>
-
-      <div class="d-flex align-items-center gap-3">
-        <div *ngIf="currentUser; else notLoggedIn" class="d-flex align-items-center gap-3">
-          <div class="text-end d-none d-sm-block">
-            <div class="small fw-medium text-light">{{ currentUser.email }}</div>
-            <span class="badge" [ngClass]="currentUser.role === 'Administrador' ? 'badge-role-admin' : 'badge-role-client'">
-              {{ currentUser.role }}
-            </span>
-          </div>
-          <button (click)="logout()" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
-            <i class="bi bi-box-arrow-right"></i>
-            <span>Salir</span>
-          </button>
-        </div>
-
-        <ng-template #notLoggedIn>
-          <a routerLink="/Login" class="btn btn-primary btn-sm px-3 fw-semibold">
-            <i class="bi bi-person-fill me-1"></i> Iniciar Sesión
-          </a>
-        </ng-template>
-      </div>
-    </div>
   </div>
-</nav>
+
+  <!-- Navegación Principal -->
+  <nav class="sidebar-nav">
+    <!-- Enlace General (Inicio): solo para usuarios no-clientes (visitantes o administradores) -->
+    <ng-container *ngIf="!isCliente">
+      <div class="sidebar-section-title">General</div>
+      <a class="sidebar-nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <i class="bi bi-grid-1x2"></i>
+        <span>Inicio</span>
+      </a>
+    </ng-container>
+
+    <!-- Enlaces para Administradores -->
+    <ng-container *ngIf="isAdmin">
+      <div class="sidebar-section-title">Administración</div>
+      <a class="sidebar-nav-item" routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+      </a>
+      <a class="sidebar-nav-item" routerLink="/admin/clientes" routerLinkActive="active">
+        <i class="bi bi-people"></i>
+        <span>Clientes</span>
+      </a>
+      <a class="sidebar-nav-item" routerLink="/admin/empresas" routerLinkActive="active">
+        <i class="bi bi-buildings"></i>
+        <span>Empresas</span>
+      </a>
+    </ng-container>
+
+    <!-- Enlace para Clientes: una sola entrada "Mi portal" (sin Inicio duplicado) -->
+    <ng-container *ngIf="isCliente">
+      <div class="sidebar-section-title">Portal</div>
+      <a class="sidebar-nav-item" routerLink="/cliente" routerLinkActive="active">
+        <i class="bi bi-person-vcard"></i>
+        <span>Mi portal</span>
+      </a>
+    </ng-container>
+  </nav>
+
+  <!-- Pie de Barra Lateral: Usuario en Plex Sans, Rol y Cerrar Sesión sin borde -->
+  <div class="sidebar-footer">
+    <div *ngIf="currentUser; else notLoggedIn">
+      <div class="mb-2">
+        <div class="text-truncate fw-medium text-main font-sans" style="font-size: 13px;" [title]="currentUser.email">
+          {{ currentUser.email }}
+        </div>
+        <div class="text-secondary font-sans" style="font-size: 11.5px;">
+          {{ currentUser.role }}
+        </div>
+      </div>
+      <button type="button" (click)="logout()" class="sidebar-logout-btn">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Cerrar sesión</span>
+      </button>
+    </div>
+
+    <ng-template #notLoggedIn>
+      <a routerLink="/Login" class="btn btn-primary btn-sm w-100 justify-content-center">
+        <i class="bi bi-lock"></i>
+        <span>Iniciar Sesión</span>
+      </a>
+    </ng-template>
+  </div>
+</aside>

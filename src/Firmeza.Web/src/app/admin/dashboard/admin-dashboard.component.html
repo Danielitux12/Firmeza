@@ -1,237 +1,187 @@
-<app-navbar></app-navbar>
+<div class="app-layout">
+  <app-navbar></app-navbar>
 
-<div class="container-fluid px-lg-5 py-4">
-  <!-- Encabezado Principal del Dashboard -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom border-card gap-3">
-    <div>
-      <div class="d-flex align-items-center gap-2 mb-1">
-        <span class="badge" style="background: var(--primary-soft); color: var(--primary-light); border: 1px solid rgba(139, 92, 246, 0.3);">
-          <i class="bi bi-shield-check me-1"></i> Panel Maestro
-        </span>
-        <span class="badge" style="background: var(--success-soft); color: var(--success-light); border: 1px solid rgba(16, 185, 129, 0.3);">
-          <span class="pulse-dot me-1"></span> Sistema Operativo
-        </span>
-      </div>
-      <h2 class="h3 fw-bold mb-0">
-        Panel de Control &amp; Métricas
-      </h2>
-      <p class="text-muted small mb-0 mt-1">Supervisión estratégica de cartera comercial y convenios empresariales</p>
-    </div>
-    <div class="d-flex gap-2">
-      <button (click)="loadMetrics()" class="btn btn-outline-secondary btn-sm shadow-sm" [disabled]="isLoading">
-        <i class="bi bi-arrow-clockwise me-1" [class.spin]="isLoading"></i>
-        <span>{{ isLoading ? 'Sincronizando...' : 'Actualizar Datos' }}</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Alerta de Error -->
-  <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-4 shadow-sm" role="alert">
-    <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0"></i>
-    <div>{{ errorMessage }}</div>
-  </div>
-
-  <!-- Métricas Clave (KPI Cards) -->
-  <div class="row g-3 g-lg-4 mb-4">
-    <!-- Card 1: Total Clientes -->
-    <div class="col-sm-6 col-xl-3">
-      <div class="card h-100 position-relative overflow-hidden">
-        <div class="card-body p-4">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <span class="text-uppercase fw-bold small text-muted" style="font-size: 0.72rem; letter-spacing: 0.08em;">
-              Total Clientes
-            </span>
-            <div class="d-flex align-items-center justify-content-center rounded-3"
-                 style="width: 48px; height: 48px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(109, 40, 217, 0.1) 100%); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary-light); font-size: 1.35rem;">
-              <i class="bi bi-people-fill"></i>
-            </div>
-          </div>
-          <div class="d-flex align-items-baseline gap-2">
-            <h3 class="display-6 fw-bold mb-0 text-light">{{ metrics.totalClientes }}</h3>
-            <span class="small text-muted">registrados</span>
-          </div>
+  <main class="main-workspace">
+    <div class="p-3 p-lg-4">
+      <!-- Cabecera de Página Consistente -->
+      <div class="page-header">
+        <div class="page-header-info">
+          <h1 class="page-header-title">Dashboard</h1>
+          <p class="page-header-desc">
+            Métricas consolidadas de clientes y convenios
+          </p>
         </div>
-        <div class="card-footer d-flex justify-content-between align-items-center py-2 px-4 bg-transparent border-top border-card">
-          <a routerLink="/admin/clientes" class="small fw-semibold text-decoration-none text-primary-light d-flex align-items-center gap-1">
-            <span>Directorio de clientes</span>
-            <i class="bi bi-chevron-right small"></i>
-          </a>
-          <i class="bi bi-person-lines-fill text-muted"></i>
+        <div class="page-header-actions">
+          <button (click)="loadData()" class="btn btn-outline-secondary btn-sm" [disabled]="isLoading">
+            <i class="bi bi-arrow-clockwise" [class.spin]="isLoading"></i>
+            <span>{{ isLoading ? 'Actualizando...' : 'Actualizar' }}</span>
+          </button>
         </div>
       </div>
-    </div>
 
-    <!-- Card 2: Clientes Activos -->
-    <div class="col-sm-6 col-xl-3">
-      <div class="card h-100 position-relative overflow-hidden">
-        <div class="card-body p-4">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <span class="text-uppercase fw-bold small text-muted" style="font-size: 0.72rem; letter-spacing: 0.08em;">
-              Clientes Activos
-            </span>
-            <div class="d-flex align-items-center justify-content-center rounded-3"
-                 style="width: 48px; height: 48px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.1) 100%); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success-light); font-size: 1.35rem;">
-              <i class="bi bi-person-check-fill"></i>
-            </div>
-          </div>
-          <div class="d-flex align-items-baseline gap-2">
-            <h3 class="display-6 fw-bold mb-0" style="color: var(--success);">{{ metrics.totalClientesActivos }}</h3>
-            <span class="badge bg-success">
-              {{ metrics.totalClientes > 0 ? ((metrics.totalClientesActivos / metrics.totalClientes) * 100 | number:'1.0-0') : 0 }}%
-            </span>
-          </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between align-items-center py-2 px-4 bg-transparent border-top border-card">
-          <span class="small text-muted">Cuentas habilitadas</span>
-          <span class="pulse-dot"></span>
-        </div>
+      <!-- Alerta de Error -->
+      <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle flex-shrink-0"></i>
+        <div>{{ errorMessage }}</div>
       </div>
-    </div>
 
-    <!-- Card 3: Total Empresas -->
-    <div class="col-sm-6 col-xl-3">
-      <div class="card h-100 position-relative overflow-hidden">
-        <div class="card-body p-4">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <span class="text-uppercase fw-bold small text-muted" style="font-size: 0.72rem; letter-spacing: 0.08em;">
-              Empresas Aliadas
-            </span>
-            <div class="d-flex align-items-center justify-content-center rounded-3"
-                 style="width: 48px; height: 48px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(2, 132, 199, 0.1) 100%); border: 1px solid rgba(56, 189, 248, 0.3); color: var(--info-light); font-size: 1.35rem;">
-              <i class="bi bi-building-fill"></i>
-            </div>
-          </div>
-          <div class="d-flex align-items-baseline gap-2">
-            <h3 class="display-6 fw-bold mb-0 text-light">{{ metrics.totalEmpresas }}</h3>
-            <span class="small text-muted">proveedores</span>
-          </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between align-items-center py-2 px-4 bg-transparent border-top border-card">
-          <a routerLink="/admin/empresas" class="small fw-semibold text-decoration-none text-primary-light d-flex align-items-center gap-1">
-            <span>Catálogo corporativo</span>
-            <i class="bi bi-chevron-right small"></i>
-          </a>
-          <i class="bi bi-buildings text-muted"></i>
-        </div>
-      </div>
-    </div>
+      <!-- Franja de 4 Cifras en un solo contenedor con celdas separadas por 1px -->
+      <section class="metrics-strip">
+        <a routerLink="/admin/clientes" class="metric-cell">
+          <span class="metric-cell-label">Clientes</span>
+          <span class="metric-cell-value">{{ metrics.totalClientes }}</span>
+        </a>
 
-    <!-- Card 4: Empresas Activas -->
-    <div class="col-sm-6 col-xl-3">
-      <div class="card h-100 position-relative overflow-hidden">
-        <div class="card-body p-4">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <span class="text-uppercase fw-bold small text-muted" style="font-size: 0.72rem; letter-spacing: 0.08em;">
-              Empresas Activas
-            </span>
-            <div class="d-flex align-items-center justify-content-center rounded-3"
-                 style="width: 48px; height: 48px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.1) 100%); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--warning-light); font-size: 1.35rem;">
-              <i class="bi bi-patch-check-fill"></i>
-            </div>
-          </div>
-          <div class="d-flex align-items-baseline gap-2">
-            <h3 class="display-6 fw-bold mb-0" style="color: var(--warning);">{{ metrics.totalEmpresasActivas }}</h3>
-            <span class="badge" style="background: var(--warning-soft); color: var(--warning-light); border: 1px solid rgba(245, 158, 11, 0.3);">
-              {{ metrics.totalEmpresas > 0 ? ((metrics.totalEmpresasActivas / metrics.totalEmpresas) * 100 | number:'1.0-0') : 0 }}%
-            </span>
-          </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between align-items-center py-2 px-4 bg-transparent border-top border-card">
-          <span class="small text-muted">Convenios vigentes</span>
-          <i class="bi bi-check-all text-warning"></i>
-        </div>
-      </div>
-    </div>
-  </div>
+        <a routerLink="/admin/clientes" class="metric-cell">
+          <span class="metric-cell-label">Clientes activos</span>
+          <span class="metric-cell-value" style="color: var(--state-success);">{{ metrics.totalClientesActivos }}</span>
+        </a>
 
-  <!-- Accesos y Módulos de Gestión -->
-  <div class="row g-4 mb-4">
-    <!-- Módulo Clientes -->
-    <div class="col-lg-6">
-      <div class="card h-100">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <div class="d-flex align-items-center gap-2">
-            <div class="d-flex align-items-center justify-content-center rounded-2"
-                 style="width: 32px; height: 32px; background: var(--primary-soft); color: var(--primary-light);">
-              <i class="bi bi-people-fill"></i>
+        <a routerLink="/admin/empresas" class="metric-cell">
+          <span class="metric-cell-label">Empresas</span>
+          <span class="metric-cell-value">{{ metrics.totalEmpresas }}</span>
+        </a>
+
+        <a routerLink="/admin/empresas" class="metric-cell">
+          <span class="metric-cell-label">Empresas activas</span>
+          <span class="metric-cell-value" style="color: var(--accent);">{{ metrics.totalEmpresasActivas }}</span>
+        </a>
+      </section>
+
+      <!-- Paneles de Proporción -->
+      <div class="row g-3 mb-4">
+        <!-- Estado de Clientes -->
+        <div class="col-lg-6">
+          <div class="panel h-100">
+            <div class="panel-header">
+              <span>Estado de clientes</span>
+              <a routerLink="/admin/clientes" class="small text-secondary fw-normal">Ver listado &rarr;</a>
             </div>
-            <h5 class="card-title mb-0 fw-bold">Módulo de Clientes</h5>
-          </div>
-          <span class="badge bg-primary">
-            {{ metrics.totalClientes }} Registrados
-          </span>
-        </div>
-        <div class="card-body p-4 d-flex flex-column justify-content-between">
-          <div>
-            <p class="text-secondary small leading-relaxed mb-4">
-              Gestiona el ciclo de vida completo de clientes: registro de nuevos usuarios, edición de datos personales, suspensión/reactivación y exportación de padrones en hojas de cálculo Excel y reportes PDF.
-            </p>
-            <div class="row g-2 mb-4">
-              <div class="col-sm-6">
-                <div class="p-3 rounded-3" style="background: var(--surface-1); border: 1px solid var(--border-card);">
-                  <div class="text-muted small">Clientes Activos</div>
-                  <div class="fs-5 fw-bold text-success mt-1">{{ metrics.totalClientesActivos }}</div>
-                </div>
+            <div class="p-3">
+              <!-- Barra de Proporción -->
+              <div class="w-100 mb-3" style="height: 10px; background-color: var(--bg-muted); border-radius: var(--radius-xs); overflow: hidden; display: flex;">
+                <div
+                  [style.width.%]="metrics.totalClientes > 0 ? (metrics.totalClientesActivos / metrics.totalClientes) * 100 : 0"
+                  style="background-color: var(--accent); height: 100%;"
+                  title="Activos"></div>
+                <div
+                  [style.width.%]="metrics.totalClientes > 0 ? ((metrics.totalClientes - metrics.totalClientesActivos) / metrics.totalClientes) * 100 : 0"
+                  style="background-color: var(--state-danger); height: 100%;"
+                  title="Suspendidos"></div>
               </div>
-              <div class="col-sm-6">
-                <div class="p-3 rounded-3" style="background: var(--surface-1); border: 1px solid var(--border-card);">
-                  <div class="text-muted small">Clientes Suspendidos</div>
-                  <div class="fs-5 fw-bold text-danger mt-1">{{ metrics.totalClientes - metrics.totalClientesActivos }}</div>
+
+              <!-- Leyenda en Línea -->
+              <div class="d-flex align-items-center justify-content-between pt-1 font-sans" style="font-size: 13px;">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="status-indicator"></span>
+                  <span class="text-secondary">Activos:</span>
+                  <strong class="text-main font-mono">{{ metrics.totalClientesActivos }}</strong>
+                  <span class="text-muted">· {{ metrics.totalClientes > 0 ? ((metrics.totalClientesActivos / metrics.totalClientes) * 100 | number:'1.0-0') : 0 }}%</span>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <span class="status-indicator inactive"></span>
+                  <span class="text-secondary">Suspendidos:</span>
+                  <strong class="text-main font-mono">{{ metrics.totalClientes - metrics.totalClientesActivos }}</strong>
+                  <span class="text-muted">· {{ metrics.totalClientes > 0 ? (((metrics.totalClientes - metrics.totalClientesActivos) / metrics.totalClientes) * 100 | number:'1.0-0') : 0 }}%</span>
                 </div>
               </div>
             </div>
           </div>
-          <div class="d-flex gap-2 flex-wrap pt-2">
-            <a routerLink="/admin/clientes" class="btn btn-primary btn-sm px-3 shadow-sm">
-              <i class="bi bi-arrow-right-circle-fill me-1"></i> Abrir Directorio de Clientes
-            </a>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Módulo Empresas -->
-    <div class="col-lg-6">
-      <div class="card h-100">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <div class="d-flex align-items-center gap-2">
-            <div class="d-flex align-items-center justify-content-center rounded-2"
-                 style="width: 32px; height: 32px; background: var(--info-soft); color: var(--info-light);">
-              <i class="bi bi-building-fill"></i>
+        <!-- Estado de Empresas -->
+        <div class="col-lg-6">
+          <div class="panel h-100">
+            <div class="panel-header">
+              <span>Estado de empresas</span>
+              <a routerLink="/admin/empresas" class="small text-secondary fw-normal">Ver listado &rarr;</a>
             </div>
-            <h5 class="card-title mb-0 fw-bold">Módulo de Empresas</h5>
-          </div>
-          <span class="badge" style="background: var(--info-soft); color: var(--info-light); border: 1px solid rgba(56, 189, 248, 0.3);">
-            {{ metrics.totalEmpresas }} Proveedores
-          </span>
-        </div>
-        <div class="card-body p-4 d-flex flex-column justify-content-between">
-          <div>
-            <p class="text-secondary small leading-relaxed mb-4">
-              Administración de proveedores, aliados y personas jurídicas. Validación fiscal estricta de NIT, números de contacto corporativos y control de estado operativo.
-            </p>
-            <div class="row g-2 mb-4">
-              <div class="col-sm-6">
-                <div class="p-3 rounded-3" style="background: var(--surface-1); border: 1px solid var(--border-card);">
-                  <div class="text-muted small">Empresas Activas</div>
-                  <div class="fs-5 fw-bold text-warning mt-1">{{ metrics.totalEmpresasActivas }}</div>
+            <div class="p-3">
+              <!-- Barra de Proporción -->
+              <div class="w-100 mb-3" style="height: 10px; background-color: var(--bg-muted); border-radius: var(--radius-xs); overflow: hidden; display: flex;">
+                <div
+                  [style.width.%]="metrics.totalEmpresas > 0 ? (metrics.totalEmpresasActivas / metrics.totalEmpresas) * 100 : 0"
+                  style="background-color: var(--accent); height: 100%;"
+                  title="Activas"></div>
+                <div
+                  [style.width.%]="metrics.totalEmpresas > 0 ? ((metrics.totalEmpresas - metrics.totalEmpresasActivas) / metrics.totalEmpresas) * 100 : 0"
+                  style="background-color: var(--border-medium); height: 100%;"
+                  title="Inactivas"></div>
+              </div>
+
+              <!-- Leyenda en Línea -->
+              <div class="d-flex align-items-center justify-content-between pt-1 font-sans" style="font-size: 13px;">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="status-indicator"></span>
+                  <span class="text-secondary">Activas:</span>
+                  <strong class="text-main font-mono">{{ metrics.totalEmpresasActivas }}</strong>
+                  <span class="text-muted">· {{ metrics.totalEmpresas > 0 ? ((metrics.totalEmpresasActivas / metrics.totalEmpresas) * 100 | number:'1.0-0') : 0 }}%</span>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <span class="status-indicator inactive"></span>
+                  <span class="text-secondary">Inactivas:</span>
+                  <strong class="text-main font-mono">{{ metrics.totalEmpresas - metrics.totalEmpresasActivas }}</strong>
+                  <span class="text-muted">· {{ metrics.totalEmpresas > 0 ? (((metrics.totalEmpresas - metrics.totalEmpresasActivas) / metrics.totalEmpresas) * 100 | number:'1.0-0') : 0 }}%</span>
                 </div>
               </div>
-              <div class="col-sm-6">
-                <div class="p-3 rounded-3" style="background: var(--surface-1); border: 1px solid var(--border-card);">
-                  <div class="text-muted small">Empresas Suspendidas</div>
-                  <div class="fs-5 fw-bold text-danger mt-1">{{ metrics.totalEmpresas - metrics.totalEmpresasActivas }}</div>
-                </div>
-              </div>
             </div>
-          </div>
-          <div class="d-flex gap-2 flex-wrap pt-2">
-            <a routerLink="/admin/empresas" class="btn btn-primary btn-sm px-3 shadow-sm">
-              <i class="bi bi-arrow-right-circle-fill me-1"></i> Abrir Gestión de Empresas
-            </a>
           </div>
         </div>
       </div>
+
+      <!-- Tabla Compacta: Últimos Registros -->
+      <div class="table-container">
+        <div class="panel-header">
+          <span>Últimos registros</span>
+          <a routerLink="/admin/clientes" class="small text-secondary fw-normal">Ver directorio &rarr;</a>
+        </div>
+
+        <div *ngIf="!isLoading && recentClientes.length > 0; else noRecentRecords" class="table-responsive border-0">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Documento</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of recentClientes">
+                <td class="fw-medium text-main">
+                  <div class="d-flex align-items-center">
+                    <span class="client-avatar">{{ (c.name || 'C').trim().charAt(0).toUpperCase() }}</span>
+                    <span class="text-truncate">{{ c.name }}</span>
+                  </div>
+                </td>
+                <td><code class="font-mono">{{ c.documentNumber }}</code></td>
+                <td class="text-secondary text-truncate">{{ c.email }}</td>
+                <td class="text-secondary tabular-nums">{{ formatPhone(c.phone) }}</td>
+                <td>
+                  <span *ngIf="c.isActive" class="status-dot-text">
+                    <span class="status-dot-green"></span>
+                    Activo
+                  </span>
+                  <span *ngIf="!c.isActive" class="tag-status inactive">
+                    <span class="status-indicator inactive"></span>
+                    Suspendido
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #noRecentRecords>
+          <div class="empty-state">
+            <div class="empty-state-icon"><i class="bi bi-inbox"></i></div>
+            <div class="empty-state-text">No hay registros recientes para mostrar.</div>
+          </div>
+        </ng-template>
+      </div>
     </div>
-  </div>
+  </main>
 </div>

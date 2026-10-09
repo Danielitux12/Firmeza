@@ -9,10 +9,10 @@ public interface IEmailSender
     /// <summary>
     /// Envía un correo electrónico simple (asunto y cuerpo HTML).
     /// </summary>
-    Task SendEmailAsync(string toEmail, string subject, string htmlBody);
+    Task SendEmailAsync(string toEmail, string subject, string htmlBody, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Envía un correo electrónico con un archivo adjunto (por ejemplo un recibo PDF).
     /// </summary>
-    Task SendEmailWithAttachmentAsync(string toEmail, string subject, string htmlBody, byte[] attachmentBytes, string attachmentFileName);
+    Task SendEmailWithAttachmentAsync(string toEmail, string subject, string htmlBody, byte[] attachmentBytes, string attachmentFileName, CancellationToken cancellationToken = default);
 }

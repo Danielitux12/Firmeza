@@ -73,10 +73,11 @@ export class AdminService {
   }
 
   // --- Empresas ---
-  getEmpresas(page = 1, pageSize = 10, search = ''): Observable<PagedResult<Empresa>> {
+  getEmpresas(page = 1, pageSize = 10, search = '', status: RecordStatusFilter = 'active'): Observable<PagedResult<Empresa>> {
     let params = new HttpParams()
       .set('page', page.toString())
-      .set('pageSize', pageSize.toString());
+      .set('pageSize', pageSize.toString())
+      .set('status', status);
 
     if (search.trim()) {
       params = params.set('search', search.trim());

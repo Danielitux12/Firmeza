@@ -1,6 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { AuthService, UserProfileResponse } from '../../services/auth.service';
 
@@ -39,5 +38,18 @@ export class ClientePortalComponent implements OnInit {
 
   get userEmail(): string {
     return this.profile?.email || this.authService.getUser()?.email || '';
+  }
+
+  formatPhone(phone: string | null | undefined): string {
+    if (!phone) return '—';
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 10) {
+      return `+57 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+    }
+    if (digits.length === 12 && digits.startsWith('57')) {
+      const local = digits.slice(2);
+      return `+57 ${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`;
+    }
+    return phone;
   }
 }

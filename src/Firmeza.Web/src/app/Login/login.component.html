@@ -1,143 +1,96 @@
-<div class="login-wrapper d-flex align-items-center justify-content-center min-vh-100 p-3 p-md-4 position-relative overflow-hidden" style="background-color: var(--bg-main);">
-  <!-- Ambient Background Glow -->
-  <div style="position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(139, 92, 246, 0.18) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;"></div>
-
-  <div class="card border-0 shadow-lg overflow-hidden position-relative" style="max-width: 940px; width: 100%; z-index: 1;">
-    <div class="row g-0">
-
-      <!-- Panel Lateral Informativo -->
-      <div class="col-md-5 d-none d-md-flex flex-column justify-content-between p-4 p-lg-5"
-           style="background: linear-gradient(160deg, #16122C 0%, #0D0A1C 100%); border-right: 1px solid var(--border-card);">
-        <div>
-          <div class="d-flex align-items-center gap-2 mb-4">
-            <i class="bi bi-shield-lock-fill fs-2 text-primary-light" style="filter: drop-shadow(0 0 10px var(--primary-glow));"></i>
-            <span class="fs-4 fw-bold font-heading text-light">Firmeza</span>
-          </div>
-          <h3 class="fw-bold mb-3 text-light" style="font-size: 1.45rem; line-height: 1.35;">
-            Acceso Seguro a la Suite Corporativa
-          </h3>
-          <p class="text-secondary small leading-relaxed">
-            Plataforma unificada para la administración de clientes y empresas aliadas con autenticación JWT de alta seguridad.
-          </p>
-        </div>
-
-        <div class="mt-4 pt-3 border-top border-card">
-          <div class="small text-muted mb-2 fw-semibold">Acceso rápido para demostración:</div>
-          <div class="d-flex gap-2 flex-wrap">
-            <button type="button" (click)="fillCredentials('admin')" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm">
-              <i class="bi bi-person-fill-gear me-1"></i> Admin
-            </button>
-            <button type="button" (click)="fillCredentials('cliente')" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm">
-              <i class="bi bi-person-fill me-1"></i> Cliente
-            </button>
-          </div>
-        </div>
+<div class="login-split-page">
+  <!-- Columna Izquierda: Formulario de Ingreso (Centrado verticalmente, max-width 360px) -->
+  <div class="login-col-form">
+    <div class="login-form-box">
+      <!-- Logotipo único en la parte superior izquierda del formulario -->
+      <div class="sidebar-brand mb-4">
+        <span class="sidebar-brand-mark">F</span>
+        <span>Firmeza</span>
       </div>
 
-      <!-- Formulario de Inicio de Sesión -->
-      <div class="col-md-7 p-4 p-lg-5" style="background: var(--surface-1);">
-        <div class="mb-4">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <h2 class="h4 fw-bold mb-0 text-light">Iniciar Sesión</h2>
-            <a routerLink="/" class="text-decoration-none small text-primary-light d-flex align-items-center gap-1">
-              <i class="bi bi-arrow-left"></i> Volver al Inicio
-            </a>
+      <!-- Título y Subtítulo corporativo -->
+      <h1 class="h2 mb-1" style="font-size: 22px;">Iniciar sesión</h1>
+      <p class="text-secondary small mb-4">Ingresa con tu correo y contraseña</p>
+
+      <form (ngSubmit)="onSubmit()" novalidate>
+        <!-- Campo Correo -->
+        <div class="mb-3">
+          <label for="email" class="form-label">
+            Correo electrónico <span class="req-star">*</span>
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-control"
+            [class.is-invalid]="emailError"
+            placeholder="usuario@firmeza.com"
+            [(ngModel)]="email"
+            (input)="validateForm()"
+            autocomplete="email"
+            required>
+          <div *ngIf="emailError" class="form-error">
+            {{ emailError }}
           </div>
-          <p class="small text-muted mb-0">Ingresa tus credenciales autorizadas</p>
         </div>
 
-        <!-- Alertas -->
-        <div *ngIf="errorMessage" class="alert alert-danger py-2 small d-flex align-items-center gap-2 mb-3">
-          <i class="bi bi-exclamation-circle-fill fs-6 flex-shrink-0"></i>
-          <div>{{ errorMessage }}</div>
+        <!-- Campo Contraseña con botón de ícono ojo -->
+        <div class="mb-4">
+          <label for="password" class="form-label">
+            Contraseña <span class="req-star">*</span>
+          </label>
+          <div class="position-relative">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              name="password"
+              class="form-control font-mono pe-5"
+              [class.is-invalid]="passwordError"
+              placeholder="••••••••"
+              [(ngModel)]="password"
+              (input)="validateForm()"
+              autocomplete="current-password"
+              required>
+            <button
+              type="button"
+              class="btn-icon-eye"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+              [title]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+              <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+            </button>
+          </div>
+          <div *ngIf="passwordError" class="form-error">
+            {{ passwordError }}
+          </div>
         </div>
+
+        <!-- Mensaje de error de credenciales inline sobre el botón -->
+        <div *ngIf="errorMessage" class="login-error-inline d-flex align-items-start gap-1">
+          <i class="bi bi-exclamation-circle flex-shrink-0 mt-0.5"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <!-- Mensaje de éxito si aplica -->
         <div *ngIf="successMessage" class="alert alert-success py-2 small d-flex align-items-center gap-2 mb-3">
-          <i class="bi bi-check-circle-fill fs-6 flex-shrink-0"></i>
+          <i class="bi bi-check-circle flex-shrink-0"></i>
           <div>{{ successMessage }}</div>
         </div>
 
-        <form (ngSubmit)="onSubmit()" novalidate>
-          <!-- Campo Correo -->
-          <div class="mb-3">
-            <label for="email" class="form-label">
-              Correo Electrónico <span class="text-danger">*</span>
-            </label>
-            <div class="input-group">
-              <span class="input-group-text border-end-0">
-                <i class="bi bi-envelope"></i>
-              </span>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                class="form-control border-start-0"
-                [class.is-invalid]="emailError"
-                placeholder="admin@firmeza.com"
-                [(ngModel)]="email"
-                (input)="validateForm()"
-                required>
-            </div>
-            <div *ngIf="emailError" class="small mt-1 text-danger d-flex align-items-center gap-1">
-              <i class="bi bi-exclamation-circle"></i> {{ emailError }}
-            </div>
-          </div>
-
-          <!-- Campo Contraseña -->
-          <div class="mb-3">
-            <label for="password" class="form-label">
-              Contraseña <span class="text-danger">*</span>
-            </label>
-            <div class="input-group">
-              <span class="input-group-text border-end-0">
-                <i class="bi bi-key"></i>
-              </span>
-              <input
-                [type]="showPassword ? 'text' : 'password'"
-                id="password"
-                name="password"
-                class="form-control border-start-0 border-end-0"
-                [class.is-invalid]="passwordError"
-                placeholder="••••••••"
-                [(ngModel)]="password"
-                (input)="validateForm()"
-                required>
-              <button
-                type="button"
-                class="btn btn-outline-secondary border-start-0"
-                (click)="togglePasswordVisibility()"
-                tabindex="-1">
-                <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
-              </button>
-            </div>
-            <div *ngIf="passwordError" class="small mt-1 text-danger d-flex align-items-center gap-1">
-              <i class="bi bi-exclamation-circle"></i> {{ passwordError }}
-            </div>
-          </div>
-
-          <!-- Botones de ayuda rápida en móvil -->
-          <div class="d-md-none mb-3 p-3 rounded text-center" style="background-color: var(--surface-2); border: 1px solid var(--border-card);">
-            <span class="small d-block mb-2 text-muted">Probar credenciales:</span>
-            <div class="btn-group btn-group-sm">
-              <button type="button" (click)="fillCredentials('admin')" class="btn btn-outline-primary">Admin</button>
-              <button type="button" (click)="fillCredentials('cliente')" class="btn btn-outline-secondary">Cliente</button>
-            </div>
-          </div>
-
-          <!-- Botón de Envío -->
-          <button
-            type="submit"
-            class="btn btn-primary w-100 py-2 mt-4 shadow"
-            [disabled]="isLoading">
-            <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status"></span>
-            <span>{{ isLoading ? 'Verificando credenciales...' : 'Acceder al Sistema' }}</span>
-          </button>
-        </form>
-
-        <div class="mt-4 pt-3 text-center small border-top border-card text-muted">
-          Autenticación segura vía <strong class="text-primary-light">JWT Bearer</strong>
-        </div>
-      </div>
-
+        <!-- Botón de Envío -->
+        <button
+          type="submit"
+          class="btn btn-primary w-100"
+          [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+          <span>{{ isLoading ? 'Ingresando...' : 'Entrar' }}</span>
+        </button>
+      </form>
     </div>
+  </div>
+
+  <!-- Columna Derecha: Panel #1F3A5F con rejilla tenue y F geométrica grande con opacidad 6-8% -->
+  <div class="login-col-cover">
+    <span class="login-f-watermark">F</span>
   </div>
 </div>

@@ -1,126 +1,150 @@
-<div class="home-page d-flex flex-column min-vh-100" style="background: var(--bg-main);">
+<div class="app-layout">
   <app-navbar></app-navbar>
 
-  <!-- Hero Section -->
-  <section class="position-relative overflow-hidden py-5 py-lg-6" style="border-bottom: 1px solid var(--border-card); background: radial-gradient(circle at 50% 10%, rgba(139, 92, 246, 0.18) 0%, rgba(7, 7, 13, 0.95) 75%);">
-    <div class="container py-lg-4 position-relative" style="z-index: 2;">
-      <div class="row justify-content-center text-center">
-        <div class="col-lg-9 col-xl-8">
-          <!-- Badge -->
-          <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill mb-4 shadow-sm"
-               style="background: var(--primary-soft); border: 1px solid rgba(139, 92, 246, 0.35); color: var(--primary-light); font-size: 0.85rem; font-weight: 600;">
-            <i class="bi bi-shield-lock-fill"></i>
-            <span>Plataforma Corporativa &bull; .NET 10 &amp; Angular 19</span>
-          </div>
-
-          <!-- Headline -->
-          <h1 class="display-4 fw-bold mb-3" style="letter-spacing: -0.035em; line-height: 1.15;">
-            Gestión Integral de Clientes y Empresas con <span style="background: linear-gradient(135deg, #FFFFFF 20%, #C4B5FD 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Firmeza</span>
-          </h1>
-
-          <!-- Subtitle -->
-          <p class="lead text-secondary mb-4 mx-auto" style="max-width: 640px; font-size: 1.15rem; line-height: 1.6;">
-            {{ subtitle() }}
+  <main class="main-workspace">
+    <div class="p-3 p-lg-4">
+      <!-- Encabezado de Inicio con Saludo según hora -->
+      <div class="page-header">
+        <div class="page-header-info">
+          <h1 class="page-header-title">{{ greeting }}</h1>
+          <p class="page-header-desc text-muted">
+            {{ today | date:'EEEE, d MMMM y' : '' : 'es-ES' }}
           </p>
+        </div>
 
-          <!-- Action Buttons -->
-          <div class="d-flex justify-content-center gap-3 flex-wrap mb-5">
-            <a *ngIf="!currentUser" routerLink="/Login" class="btn btn-primary px-4 py-3 fs-6 shadow">
-              <i class="bi bi-person-fill me-1"></i> Iniciar Sesión en la Plataforma
-            </a>
-            <a *ngIf="isAdmin" routerLink="/admin" class="btn btn-primary px-4 py-3 fs-6 shadow">
-              <i class="bi bi-speedometer2 me-1"></i> Ir al Panel de Administración
-            </a>
-            <a *ngIf="isCliente" routerLink="/cliente" class="btn btn-primary px-4 py-3 fs-6 shadow">
-              <i class="bi bi-person-badge me-1"></i> Acceder a Mi Portal
-            </a>
-            <a href="#features" class="btn btn-outline-secondary px-4 py-3 fs-6">
-              <i class="bi bi-arrow-down-circle me-1"></i> Conocer Características
-            </a>
-          </div>
+        <div *ngIf="!currentUser" class="page-header-actions">
+          <a routerLink="/Login" class="btn btn-primary btn-sm">
+            Iniciar Sesión
+          </a>
+        </div>
+      </div>
 
-          <!-- Feature Pills -->
-          <div class="d-flex justify-content-center align-items-center gap-3 gap-md-4 flex-wrap text-muted small">
-            <span class="d-flex align-items-center gap-1">
-              <i class="bi bi-check-circle-fill text-success"></i> Autenticación JWT Bearer
-            </span>
-            <span class="d-flex align-items-center gap-1">
-              <i class="bi bi-check-circle-fill text-success"></i> PostgreSQL 16
-            </span>
-            <span class="d-flex align-items-center gap-1">
-              <i class="bi bi-check-circle-fill text-success"></i> Exportaciones Excel &amp; PDF
-            </span>
+      <!-- Franja Única de Indicadores (4 Celdas Clicables) -->
+      <section *ngIf="isAdmin" class="metrics-strip">
+        <a routerLink="/admin/clientes" class="metric-cell">
+          <span class="metric-cell-label">Total clientes</span>
+          <span class="metric-cell-value">{{ totalClientes() }}</span>
+        </a>
+
+        <a routerLink="/admin/empresas" class="metric-cell">
+          <span class="metric-cell-label">Empresas activas</span>
+          <span class="metric-cell-value">{{ empresasActivas() }}</span>
+        </a>
+
+        <a routerLink="/admin/clientes" class="metric-cell">
+          <span class="metric-cell-label">Nuevos este mes</span>
+          <span class="metric-cell-value" style="color: var(--state-success);">+{{ nuevosEsteMes() }}</span>
+        </a>
+
+        <a routerLink="/admin/clientes" class="metric-cell">
+          <span class="metric-cell-label">Pendientes</span>
+          <span class="metric-cell-value" [style.color]="pendientes() > 0 ? 'var(--state-warning)' : 'inherit'">{{ pendientes() }}</span>
+        </a>
+      </section>
+
+      <!-- Dos Columnas: Últimos Clientes y Accesos Rápidos -->
+      <div *ngIf="isAdmin" class="row g-3">
+        <!-- Columna Izquierda: Últimos Clientes Registrados -->
+        <div class="col-lg-8">
+          <div class="table-container">
+            <div class="panel-header">
+              <span>Últimos clientes registrados</span>
+              <a routerLink="/admin/clientes" class="small text-secondary fw-normal">Ver todos &rarr;</a>
+            </div>
+
+            <!-- Tabla compacta cuando hay clientes -->
+            <div *ngIf="!isLoadingRecent() && recentClientes().length > 0; else noRecentClientes" class="table-responsive border-0">
+              <table class="table mb-0">
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Documento</th>
+                    <th>Correo</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let c of recentClientes()">
+                    <td class="fw-medium text-main">
+                      <div class="d-flex align-items-center">
+                        <span class="client-avatar">{{ (c.name || 'C').trim().charAt(0).toUpperCase() }}</span>
+                        <span class="text-truncate">{{ c.name }}</span>
+                      </div>
+                    </td>
+                    <td><code class="font-mono">{{ c.documentNumber }}</code></td>
+                    <td class="text-secondary text-truncate">{{ c.email }}</td>
+                    <td>
+                      <span *ngIf="c.isActive" class="status-dot-text">
+                        <span class="status-dot-green"></span>
+                        Activo
+                      </span>
+                      <span *ngIf="!c.isActive" class="tag-status inactive">
+                        <span class="status-indicator inactive"></span>
+                        Suspendido
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Estado Vacío -->
+            <ng-template #noRecentClientes>
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="bi bi-people"></i></div>
+                <div class="empty-state-text">No hay clientes registrados en el sistema.</div>
+                <a routerLink="/admin/clientes" class="btn btn-primary btn-sm">
+                  Registrar primer cliente
+                </a>
+              </div>
+            </ng-template>
           </div>
         </div>
+
+        <!-- Columna Derecha: Accesos Rápidos -->
+        <div class="col-lg-4">
+          <div class="panel">
+            <div class="panel-header">
+              <span>Accesos rápidos</span>
+            </div>
+            <ul class="quick-link-list">
+              <li class="quick-link-item">
+                <a routerLink="/admin/clientes" class="quick-link-btn">
+                  <span>Nuevo cliente</span>
+                  <span>&rarr;</span>
+                </a>
+              </li>
+              <li class="quick-link-item">
+                <a routerLink="/admin/empresas" class="quick-link-btn">
+                  <span>Nueva empresa</span>
+                  <span>&rarr;</span>
+                </a>
+              </li>
+              <li class="quick-link-item">
+                <button type="button" (click)="downloadClientesExcel()" class="quick-link-btn w-100 bg-transparent border-0 text-start">
+                  <span>Exportar clientes a Excel</span>
+                  <span>&rarr;</span>
+                </button>
+              </li>
+              <li class="quick-link-item">
+                <button type="button" (click)="downloadEmpresasPdf()" class="quick-link-btn w-100 bg-transparent border-0 text-start">
+                  <span>Exportar empresas a PDF</span>
+                  <span>&rarr;</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista para Cliente no Administrador -->
+      <div *ngIf="isCliente" class="panel p-4">
+        <h2 class="h2 mb-2">Portal de Servicios</h2>
+        <p class="text-secondary mb-3">Consulta tu ficha de datos y estado de cuenta.</p>
+        <a routerLink="/cliente" class="btn btn-primary btn-sm">
+          Ir a Mi Portal
+        </a>
       </div>
     </div>
-  </section>
-
-  <!-- Features Section -->
-  <section class="py-5 py-lg-6 flex-grow-1" id="features" style="background: var(--bg-main);">
-    <div class="container">
-      <div class="text-center mb-5">
-        <span class="badge bg-primary mb-2">Capacidades Empresariales</span>
-        <h2 class="h2 fw-bold text-light">Diseñado para Operaciones de Alta Calidad</h2>
-        <p class="text-muted small">Todo lo que necesitas para centralizar y auditar clientes y aliados estratégicos</p>
-      </div>
-
-      <div class="row g-4">
-        <!-- Feature 1 -->
-        <div class="col-md-4">
-          <div class="card h-100 p-4">
-            <div class="d-flex align-items-center justify-content-center rounded-3 mb-4"
-                 style="width: 52px; height: 52px; background: var(--primary-soft); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary-light); font-size: 1.5rem;">
-              <i class="bi bi-shield-check"></i>
-            </div>
-            <h4 class="h5 fw-bold text-light mb-2">Seguridad de Nivel Empresarial</h4>
-            <p class="text-secondary small mb-0 leading-relaxed">
-              Autenticación JWT con rotación segura, políticas de autorización estrictas por roles y protección contra inyecciones y duplicados.
-            </p>
-          </div>
-        </div>
-
-        <!-- Feature 2 -->
-        <div class="col-md-4">
-          <div class="card h-100 p-4">
-            <div class="d-flex align-items-center justify-content-center rounded-3 mb-4"
-                 style="width: 52px; height: 52px; background: var(--success-soft); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success-light); font-size: 1.5rem;">
-              <i class="bi bi-lightning-charge-fill"></i>
-            </div>
-            <h4 class="h5 fw-bold text-light mb-2">Rendimiento Inmediato</h4>
-            <p class="text-secondary small mb-0 leading-relaxed">
-              Conexiones optimizadas a PostgreSQL con pool precalentado y arquitectura SPA en Angular para respuestas en milisegundos.
-            </p>
-          </div>
-        </div>
-
-        <!-- Feature 3 -->
-        <div class="col-md-4">
-          <div class="card h-100 p-4">
-            <div class="d-flex align-items-center justify-content-center rounded-3 mb-4"
-                 style="width: 52px; height: 52px; background: var(--info-soft); border: 1px solid rgba(56, 189, 248, 0.3); color: var(--info-light); font-size: 1.5rem;">
-              <i class="bi bi-file-earmark-spreadsheet-fill"></i>
-            </div>
-            <h4 class="h5 fw-bold text-light mb-2">Reportes y Exportación</h4>
-            <p class="text-secondary small mb-0 leading-relaxed">
-              Generación de informes estructurados en formatos Excel OpenXML y documentos PDF con diseño institucional al instante.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="py-4 border-top border-card text-center text-muted small" style="background: var(--surface-1);">
-    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-shield-lock-fill text-primary-light"></i>
-        <strong class="text-light">Firmeza</strong> &bull; Sistema de Gestión Integral
-      </div>
-      <div>
-        &copy; 2026 Firmeza Store. Todos los derechos reservados.
-      </div>
-    </div>
-  </footer>
+  </main>
 </div>

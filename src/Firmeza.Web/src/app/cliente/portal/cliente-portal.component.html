@@ -1,139 +1,132 @@
-<app-navbar></app-navbar>
+<div class="app-layout">
+  <app-navbar></app-navbar>
 
-<div class="container-fluid px-lg-5 py-4">
-  <div class="row justify-content-center">
-    <div class="col-xl-10">
+  <main class="main-workspace">
+    <div class="p-3 p-lg-4">
+      <!-- Cabecera de Página Consistente -->
+      <div class="page-header">
+        <div class="page-header-info">
+          <h1 class="page-header-title">
+            {{ isLoading ? 'Mi portal' : (profile?.cliente?.name || 'Mi portal') }}
+          </h1>
+          <p class="page-header-desc">
+            Tus datos de contacto
+          </p>
+        </div>
 
-      <!-- Encabezado de Bienvenida con degradado -->
-      <div class="card mb-4 position-relative overflow-hidden" style="background: linear-gradient(145deg, #181432 0%, #0D0A1C 100%);">
-        <div class="card-body p-4 p-md-5">
-          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-            <div>
-              <span class="badge mb-2 bg-primary">
-                <i class="bi bi-person-workspace me-1"></i> Portal Exclusivo de Cliente
-              </span>
-              <h2 class="display-6 fw-bold text-light mb-1">
-                Bienvenido, {{ profile?.cliente?.name || userEmail }}
-              </h2>
-              <p class="text-secondary mb-0">
-                Consulta los detalles de tu cuenta y el estado de tus servicios en Firmeza.
-              </p>
-            </div>
-            <div>
-              <span class="badge fs-6 px-3 py-2" [ngClass]="profile?.cliente?.isActive ? 'bg-success' : 'bg-danger'">
-                <span *ngIf="profile?.cliente?.isActive" class="pulse-dot me-1"></span>
-                <i *ngIf="!profile?.cliente?.isActive" class="bi bi-exclamation-octagon-fill me-1"></i>
-                {{ profile?.cliente?.isActive ? 'Cuenta Activa' : 'Cuenta Suspendida' }}
-              </span>
-            </div>
-          </div>
+        <!-- Renderizar tag de estado de cuenta SOLO cuando los datos hayan llegado (nunca durante carga) -->
+        <div class="page-header-actions" *ngIf="!isLoading && profile?.cliente">
+          <span class="tag-status" [ngClass]="profile.cliente.isActive ? 'active' : 'inactive'">
+            <span class="status-indicator" [class.inactive]="!profile.cliente.isActive"></span>
+            {{ profile.cliente.isActive ? 'Cuenta activa' : 'Cuenta suspendida' }}
+          </span>
         </div>
       </div>
 
-      <!-- Alerta si hay error -->
+      <!-- Alerta de Error -->
       <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-4">
-        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <i class="bi bi-exclamation-triangle flex-shrink-0"></i>
         <div>{{ errorMessage }}</div>
       </div>
 
-      <div *ngIf="isLoading" class="text-center py-5 text-muted">
-        <div class="spinner-border text-primary me-2" role="status"></div>
-        <span>Cargando tus datos de cliente...</span>
-      </div>
-
-      <!-- Contenido del Portal -->
-      <div *ngIf="!isLoading" class="row g-4">
-        <!-- Tarjeta de Información Personal -->
-        <div class="col-md-7">
-          <div class="card h-100">
-            <div class="card-header py-3 d-flex align-items-center gap-2">
-              <i class="bi bi-person-lines-fill text-primary-light fs-5"></i>
-              <h5 class="card-title mb-0 fw-bold text-light">Información Personal Registrada</h5>
-            </div>
-            <div class="card-body p-4">
-              <div class="row g-3">
-                <div class="col-sm-6">
-                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Nombre Completo</div>
-                  <div class="fw-semibold text-light mt-1">{{ profile?.cliente?.name || 'No especificado' }}</div>
-                </div>
-
-                <div class="col-sm-6">
-                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Documento / Cédula</div>
-                  <div class="mt-1">
-                    <code>{{ profile?.cliente?.documentNumber || 'No registrado' }}</code>
-                  </div>
-                </div>
-
-                <div class="col-sm-6">
-                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Correo Electrónico</div>
-                  <div class="text-secondary mt-1">{{ profile?.cliente?.email || userEmail }}</div>
-                </div>
-
-                <div class="col-sm-6">
-                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Teléfono de Contacto</div>
-                  <div class="text-light mt-1">{{ profile?.cliente?.phone || 'No registrado' }}</div>
-                </div>
-
-                <div class="col-sm-6">
-                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Edad</div>
-                  <div class="text-light mt-1">
-                    <span class="badge" style="background: var(--surface-3); color: var(--text-primary); border: 1px solid var(--border-card);">
-                      {{ profile?.cliente?.age ? profile?.cliente?.age + ' años' : 'No registrada' }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="col-sm-6">
-                  <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Dirección de Domicilio</div>
-                  <div class="text-secondary mt-1">{{ profile?.cliente?.address || 'No registrada' }}</div>
-                </div>
-              </div>
-            </div>
+      <!-- Estado de Carga: Skeleton con forma de la ficha (6 filas en gris #E3E6EB con pulso suave) -->
+      <div *ngIf="isLoading" style="max-width: 720px;">
+        <div class="panel">
+          <div class="panel-header">
+            <span>Mis datos</span>
           </div>
-        </div>
+          <div class="p-4">
+            <dl class="row mb-0 g-3">
+              <!-- Fila 1: Nombre completo -->
+              <dt class="col-sm-4 mb-1">
+                <div class="skeleton-pulse skeleton-label"></div>
+              </dt>
+              <dd class="col-sm-8 mb-1">
+                <div class="skeleton-pulse skeleton-value"></div>
+              </dd>
 
-        <!-- Tarjeta de Soporte y Seguridad -->
-        <div class="col-md-5">
-          <div class="card h-100">
-            <div class="card-header py-3 d-flex align-items-center gap-2">
-              <i class="bi bi-shield-check text-primary-light fs-5"></i>
-              <h5 class="card-title mb-0 fw-bold text-light">Seguridad &amp; Privacidad</h5>
-            </div>
-            <div class="card-body p-4 d-flex flex-column justify-content-between">
-              <div>
-                <ul class="list-unstyled mb-4">
-                  <li class="d-flex align-items-start gap-3 mb-3">
-                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
-                         style="width: 34px; height: 34px; background: var(--primary-soft); color: var(--primary-light);">
-                      <i class="bi bi-lock-fill small"></i>
-                    </div>
-                    <div>
-                      <strong class="text-light">Sesión Autenticada JWT</strong>
-                      <p class="text-secondary small mb-0">Tus solicitudes se firman criptográficamente con tokens seguros de corta duración.</p>
-                    </div>
-                  </li>
-                  <li class="d-flex align-items-start gap-3 mb-3">
-                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
-                         style="width: 34px; height: 34px; background: var(--info-soft); color: var(--info-light);">
-                      <i class="bi bi-person-badge-fill small"></i>
-                    </div>
-                    <div>
-                      <strong class="text-light">Nivel de Acceso</strong>
-                      <p class="text-secondary small mb-0">Cuenta autorizada bajo la directiva <code>SoloCliente</code>.</p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
+              <!-- Fila 2: Documento -->
+              <dt class="col-sm-4 mb-1">
+                <div class="skeleton-pulse skeleton-label"></div>
+              </dt>
+              <dd class="col-sm-8 mb-1">
+                <div class="skeleton-pulse skeleton-value-short"></div>
+              </dd>
 
-              <div class="p-3 rounded-3 border-card small text-muted" style="background: var(--surface-1); border: 1px solid var(--border-card);">
-                <i class="bi bi-info-circle text-primary-light me-1"></i>
-                Para solicitar una actualización de tus datos personales, por favor contacta al administrador de la plataforma.
-              </div>
-            </div>
+              <!-- Fila 3: Correo electrónico -->
+              <dt class="col-sm-4 mb-1">
+                <div class="skeleton-pulse skeleton-label"></div>
+              </dt>
+              <dd class="col-sm-8 mb-1">
+                <div class="skeleton-pulse skeleton-value"></div>
+              </dd>
+
+              <!-- Fila 4: Teléfono -->
+              <dt class="col-sm-4 mb-1">
+                <div class="skeleton-pulse skeleton-label"></div>
+              </dt>
+              <dd class="col-sm-8 mb-1">
+                <div class="skeleton-pulse skeleton-value-short"></div>
+              </dd>
+
+              <!-- Fila 5: Edad -->
+              <dt class="col-sm-4 mb-1">
+                <div class="skeleton-pulse skeleton-label"></div>
+              </dt>
+              <dd class="col-sm-8 mb-1">
+                <div class="skeleton-pulse skeleton-value-short" style="width: 80px;"></div>
+              </dd>
+
+              <!-- Fila 6: Dirección -->
+              <dt class="col-sm-4 mb-0">
+                <div class="skeleton-pulse skeleton-label"></div>
+              </dt>
+              <dd class="col-sm-8 mb-0">
+                <div class="skeleton-pulse skeleton-value-long"></div>
+              </dd>
+            </dl>
           </div>
         </div>
       </div>
 
+      <!-- Contenido Principal: Ficha única "Mis datos" una vez cargado -->
+      <div *ngIf="!isLoading" style="max-width: 720px;">
+        <div class="panel">
+          <div class="panel-header">
+            <span>Mis datos</span>
+          </div>
+          <div class="p-4">
+            <dl class="row mb-0 g-3">
+              <dt class="col-sm-4 font-sans text-secondary mb-1" style="font-size: 13px; font-weight: 500;">Nombre completo</dt>
+              <dd class="col-sm-8 text-main mb-1" style="font-size: 14px; font-weight: 500;">{{ profile?.cliente?.name || 'No especificado' }}</dd>
+
+              <dt class="col-sm-4 font-sans text-secondary mb-1" style="font-size: 13px; font-weight: 500;">Documento</dt>
+              <dd class="col-sm-8 mb-1" style="font-size: 14px;">
+                <code class="font-mono">{{ profile?.cliente?.documentNumber || 'No registrado' }}</code>
+              </dd>
+
+              <dt class="col-sm-4 font-sans text-secondary mb-1" style="font-size: 13px; font-weight: 500;">Correo electrónico</dt>
+              <dd class="col-sm-8 text-secondary mb-1" style="font-size: 14px;">{{ profile?.cliente?.email || userEmail }}</dd>
+
+              <dt class="col-sm-4 font-sans text-secondary mb-1" style="font-size: 13px; font-weight: 500;">Teléfono</dt>
+              <dd class="col-sm-8 text-secondary tabular-nums mb-1" style="font-size: 14px;">{{ formatPhone(profile?.cliente?.phone) }}</dd>
+
+              <dt class="col-sm-4 font-sans text-secondary mb-1" style="font-size: 13px; font-weight: 500;">Edad</dt>
+              <dd class="col-sm-8 text-secondary tabular-nums mb-1" style="font-size: 14px;">
+                {{ profile?.cliente?.age ? profile?.cliente?.age + ' años' : '—' }}
+              </dd>
+
+              <dt class="col-sm-4 font-sans text-secondary mb-1" style="font-size: 13px; font-weight: 500;">Dirección</dt>
+              <dd class="col-sm-8 text-secondary mb-0" style="font-size: 14px;">{{ profile?.cliente?.address || '—' }}</dd>
+            </dl>
+          </div>
+        </div>
+
+        <!-- Nota debajo de la ficha, sin caja -->
+        <p class="text-secondary mt-3 mb-0" style="font-size: 13px;">
+          Para solicitar actualizaciones de tus datos, contacta al administrador.
+        </p>
+      </div>
     </div>
-  </div>
+  </main>
 </div>
